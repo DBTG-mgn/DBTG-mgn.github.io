@@ -227,7 +227,7 @@ function seed(){
   return d;
 }
 let DB=seed();
-function save(){localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+function save(){try{localStorage.setItem(DB_KEY,JSON.stringify(DB));}catch(e){/* プレビュー等で保存不可でも動作は継続 */}}
 
 /* ---------- helpers ---------- */
 const yen=n=>'¥'+(Number(n)||0).toLocaleString('ja-JP');
