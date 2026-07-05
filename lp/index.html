@@ -68,7 +68,7 @@
   .sec-lead{margin-top:14px;color:var(--sub);max-width:38em}
   /* pain */
   .pain{background:var(--field)}
-  .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:28px}
+  .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:28px}
   .pain-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
   .pain-card .q{font-weight:800;font-size:15.5px;line-height:1.6}
   .pain-card .a{margin-top:10px;font-size:13.5px;color:var(--sub)}
@@ -94,6 +94,32 @@
   .data-box p b{color:var(--ink)}
   .data-box .pt{display:flex;gap:10px;margin-top:14px;font-size:13.5px}
   .data-box .pt .d{color:var(--brand);font-weight:900;flex:none}
+  /* world */
+  .world{background:var(--night);color:#fff}
+  .world .sec-k{color:#8fc9a9}
+  .world h2{color:#fff}
+  .world .sec-lead{color:#b9d4c5}
+  .fact-list{margin-top:26px;display:grid;gap:12px}
+  .fact{display:flex;gap:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+        border-radius:14px;padding:18px 20px}
+  .fact .no{font-size:12px;font-weight:900;color:#8fc9a9;letter-spacing:.1em;flex:none;padding-top:2px}
+  .fact p{font-size:14px;color:#dcebe2}
+  .fact p b{color:#fff}
+  .world .close{margin-top:24px;font-size:15px;font-weight:700;color:#fff;border-left:3px solid var(--brand);
+                padding-left:14px;line-height:1.8}
+  /* compare */
+  .cmp-wrap{overflow-x:auto;margin-top:28px;border:1px solid var(--line);border-radius:14px}
+  table.cmp{border-collapse:collapse;width:100%;min-width:600px;font-size:13.5px}
+  .cmp th,.cmp td{padding:12px 14px;text-align:center;border-bottom:1px solid var(--line)}
+  .cmp thead th{background:var(--field);font-size:13px;letter-spacing:.02em}
+  .cmp tbody tr:last-child td{border-bottom:none}
+  .cmp td:first-child,.cmp th:first-child{text-align:left;font-weight:700;font-size:12.5px;color:var(--sub);
+     position:sticky;left:0;background:#fff;min-width:118px}
+  .cmp thead th:first-child{background:var(--field)}
+  .cmp .gn{background:var(--tint);font-weight:800;color:var(--deep)}
+  .cmp thead .gn{background:var(--brand);color:#fff}
+  .cmp .ng{color:var(--amber)}
+  .cmp-note{font-size:11.5px;color:var(--sub);margin-top:10px}
   /* faq */
   details{border-bottom:1px solid var(--line);padding:4px 0}
   summary{cursor:pointer;font-weight:800;font-size:15px;padding:14px 4px;list-style:none;display:flex;justify-content:space-between;gap:12px}
@@ -177,8 +203,12 @@
         <p class="a">仕事を「完了」にするだけで、<b>未請求・未入金をアプリが数えて警告</b>。取りこぼしていたお金が、ホーム画面の一番上に出てきます。</p>
       </div>
       <div class="pain-card">
-        <p class="q">「明日の確認連絡、文面を毎回考えるのが地味にしんどい」</p>
-        <p class="a">前日のリマインド・請求のご案内・作業後のお礼。<b>丁寧な文面をワンタップで作って、そのままLINEで送信</b>。リピートに繋がる「マメな人」になれます。</p>
+        <p class="q">「連絡不足でドタキャン。お礼を忘れてリピートも来ない」</p>
+        <p class="a">前日のリマインド・請求のご案内・作業後のお礼。<b>丁寧な文面をワンタップで作って、そのままLINEで送信</b>。当日キャンセルが減り、「マメな人」として次の指名に繋がります。</p>
+      </div>
+      <div class="pain-card">
+        <p class="q">「無料アプリは広告と透かしだらけ。法人向けは月1万円超」</p>
+        <p class="a">無料の書類アプリは広告が出て、書類に透かしが入るものも。かといって法人向けの現場管理システムは<b>初期費用数万円+月1万円以上</b>。ひとりの仕事に合う道具が、ずっとありませんでした。</p>
       </div>
     </div>
   </div>
@@ -198,6 +228,52 @@
       <div class="feat"><div class="ic">💬</div><h3>お客様へのメッセージ</h3><p>前日確認・請求案内・お礼の3種の文面を自動作成。LINE・メールですぐ送れる。</p></div>
       <div class="feat"><div class="ic">📈</div><h3>売上がひと目で</h3><p>今月の売上と先月比、過去6ヶ月のグラフ。未請求・未入金の警告つき。</p></div>
     </div>
+  </div>
+</section>
+
+<!-- ================= WORLD ================= -->
+<section class="world">
+  <div class="wrap">
+    <p class="sec-k">海外では、もう答えが出ています</p>
+    <h2>世界のひとり仕事は、「一体型」で回っている。</h2>
+    <p class="sec-lead">北米では、清掃・修理・造園などの訪問サービスで働く何十万人もの個人事業主が、
+    予定・見積・請求・お客様連絡がひとつになったアプリ（Jobber、Housecall Pro、ZenMaidなど）で仕事を回しています。
+    彼らがそれを手放さない理由は、はっきりしています。</p>
+    <div class="fact-list">
+      <div class="fact"><span class="no">理由 1</span>
+        <p><b>リマインド連絡の自動化。</b>前日のひと言でドタキャンが減り、作業後のお礼が次の予約と紹介を生む。「連絡がマメ」は、それだけで選ばれる理由になる。</p></div>
+      <div class="fact"><span class="no">理由 2</span>
+        <p><b>請求の取りこぼし防止。</b>終わったのに請求していない仕事を、アプリが見張って知らせてくれる。忙しい月ほど、こぼれていたお金は大きい。</p></div>
+      <div class="fact"><span class="no">理由 3</span>
+        <p><b>現場で完結すること。</b>駐車場で見積を出し、帰りの信号待ちで請求を送る。夜にパソコンを開く時間が、そのまま自分の時間に戻る。</p></div>
+    </div>
+    <p class="close">日本にはまだ、この「一体型」がほとんどありません。<br>
+    ゲンバノートは、世界標準になった仕事の回し方を、日本のひとり仕事のために無料で作り直したものです。</p>
+  </div>
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section>
+  <div class="wrap">
+    <p class="sec-k">選択肢をくらべる</p>
+    <h2>「書類だけ」でも、「法人向け」でもなく。</h2>
+    <div class="cmp-wrap">
+      <table class="cmp">
+        <thead><tr>
+          <th></th><th>無料の書類アプリ</th><th>法人向け現場管理</th><th class="gn">ゲンバノート</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>料金</td><td>無料〜月500円</td><td class="ng">初期数万円＋月1万円超</td><td class="gn">無料</td></tr>
+          <tr><td>広告</td><td class="ng">あり（有料でも出るものも）</td><td>なし</td><td class="gn">なし</td></tr>
+          <tr><td>会員登録</td><td class="ng">必要</td><td class="ng">営業経由で契約</td><td class="gn">不要</td></tr>
+          <tr><td>書類の透かし</td><td class="ng">無料版は入るものも</td><td>なし</td><td class="gn">なし</td></tr>
+          <tr><td>まとめて請求</td><td class="ng">有料オプション</td><td>あり</td><td class="gn">無料で標準</td></tr>
+          <tr><td>予定・顧客・売上まで一体</td><td class="ng">✕（書類だけ）</td><td>○</td><td class="gn">○</td></tr>
+          <tr><td>データの置き場</td><td>運営会社のサーバー</td><td>運営会社のサーバー</td><td class="gn">あなたの端末の中</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cmp-note">※ 国内で提供されている各分野の代表的なサービスの公開情報・利用者レビューをもとにした、2026年7月時点の一般的な傾向です。</p>
   </div>
 </section>
 
@@ -250,6 +326,10 @@
       <details>
         <summary>機種変更のときはどうすればいいですか？</summary>
         <p>設定画面の「書き出す」でバックアップファイルを保存し、新しい端末で「読み込む」を押すだけです。データが増えてくると、アプリが自動でバックアップをおすすめします。</p>
+      </details>
+      <details>
+        <summary>請求書アプリなら他にもあります。何が違うのですか？</summary>
+        <p>書類を作る機能だけなら、他にも良いアプリがあります。ゲンバノートの違いは、書類の「前後」まで繋がっていることです。予定を入れる→現場へ行く→完了にする→未請求ならアプリが警告→請求書を出す→お礼をLINEで送る→入金を確認する。この一連の流れが1つの画面で回ります。書類はその一部にすぎません。</p>
       </details>
       <details>
         <summary>どんな職種に向いていますか？</summary>
