@@ -143,10 +143,10 @@
   /* ---------- documents ---------- */
   .doc{background:#fff;color:#111;padding:24px 22px;font-size:13px;line-height:1.65;border:1px solid var(--line);border-radius:10px}
   .doc h1{font-size:22px;text-align:center;letter-spacing:.35em;margin-bottom:16px;font-weight:700}
-  .doc table{width:100%;border-collapse:collapse;margin:14px 0}
-  .doc th,.doc td{border:1px solid #9aa39d;padding:7px 8px;text-align:left}
-  .doc th{background:#f1f4f2;font-size:12px}
-  .doc .r{text-align:right;font-variant-numeric:tabular-nums}
+  .doc table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12px}
+  .doc th,.doc td{border:1px solid #9aa39d;padding:7px 6px;text-align:left}
+  .doc th{background:#f1f4f2;font-size:11px;white-space:nowrap}
+  .doc .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   .doc .meta{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
   .doc .box{border:1px solid #9aa39d;padding:10px 12px;min-width:200px;border-radius:4px}
   .doc .stamp{border:2px solid var(--brand);color:var(--brand);border-radius:6px;padding:4px 10px;font-weight:700;
@@ -317,10 +317,12 @@ function seed(){
   const d=load();
   d.profile=Object.assign({yago:'',name:'',phone:'',reg:'',addr:'',note:'',taxRate:10},d.profile||{});
   d.menu=d.menu||[];d.customers=d.customers||[];d.jobs=d.jobs||[];
+  d.meta=Object.assign({lastExport:'',changes:0},d.meta||{});
   return d;
 }
 let DB=seed();
-function save(){localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+function persist(){localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+function save(){DB.meta.changes=(DB.meta.changes||0)+1;persist();}
 
 /* ================= helpers ================= */
 const yen=n=>'¥'+(Number(n)||0).toLocaleString('ja-JP');
@@ -377,6 +379,10 @@ function renderHome(){
   let a='';
   if(unb)a+=`<button class="alert warn" onclick="goJobs('完了')">📄 未請求の完了案件が <span class="n">${unb}件</span> あります<span class="go">›</span></button>`;
   if(unp)a+=`<button class="alert info" onclick="goJobs('請求済')">💰 入金待ちの請求が <span class="n">${unp}件</span> あります<span class="go">›</span></button>`;
+  const mt=DB.meta||{};
+  const days=mt.lastExport?(Date.now()-new Date(mt.lastExport).getTime())/864e5:Infinity;
+  const needBk=(mt.changes>=20)||(mt.changes>0&&days>30)||(!mt.lastExport&&DB.jobs.length+DB.customers.length>=10);
+  if(needBk)a+=`<button class="alert warn" onclick="nav('settings')">💾 データのバックアップをおすすめします（端末内にのみ保存されています）<span class="go">›</span></button>`;
   document.getElementById('alerts').innerHTML=a;
 
   /* chart: last 6 months */
@@ -499,6 +505,7 @@ function delMenu(id){DB.menu=DB.menu.filter(m=>m.id!==id);save();renderSettings(
 function openCustomer(id){
   const c=id?cust(id):{id:'',name:'',phone:'',addr:'',note:''};
   const hist=id?DB.jobs.filter(j=>j.customerId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
+  const billable=id?hist.filter(j=>j.status==='完了'||j.status==='請求済'):[];
   const histHtml=hist.length?hist.slice(0,8).map(j=>
     `<div class="item" onclick="openJob('${j.id}')" style="cursor:pointer">
       <div class="main"><div class="t" style="font-size:13.5px">${fmtDate(j.date)}　${esc(svcText(j))}</div></div>
@@ -512,6 +519,7 @@ function openCustomer(id){
       ${c.addr?`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.addr)}" target="_blank" rel="noopener"><span class="ic">🗺</span>地図を開く</a>`:''}
       <button onclick="closeModal();openJob(null,'${id}')"><span class="ic">＋</span>新規案件</button>
     </div>`:''}
+    ${id&&billable.length?`<button class="btn ghost full sm" style="margin-top:6px" onclick="openBulkInvoice('${id}')">🧾 複数の案件をまとめて1枚の請求書に（対象 ${billable.length}件）</button>`:''}
     <label class="f">名前 *</label><input class="f" id="cName" value="${esc(c.name)}">
     <label class="f">電話番号</label><input class="f" id="cPhone" inputmode="tel" value="${esc(c.phone)}">
     <label class="f">住所</label><input class="f" id="cAddr" value="${esc(c.addr)}">
@@ -678,6 +686,87 @@ function copyMsg(){
       document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('コピーしました');});
 }
 
+/* ================= bulk invoice (まとめて請求) ================= */
+function openBulkInvoice(custId){
+  const c=cust(custId);if(!c)return;
+  const jobs=DB.jobs.filter(j=>j.customerId===custId&&(j.status==='完了'||j.status==='請求済'))
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  showModal(`
+    <div class="mtop"><h2>まとめて請求書</h2><button class="x" onclick="closeModal()" aria-label="閉じる">×</button></div>
+    <p class="muted" style="margin:0 0 8px">${esc(c.name)}様の未入金の案件から、1枚の請求書に含めるものを選んでください。</p>
+    ${jobs.map(j=>`
+      <label class="item" style="cursor:pointer">
+        <input type="checkbox" class="bulkCk" value="${j.id}" ${j.status==='完了'?'checked':''} style="width:19px;height:19px;accent-color:var(--brand);flex:none">
+        <div class="main"><div class="t" style="font-size:14px">${fmtDate(j.date)}　${esc(svcText(j))}</div>
+        <div class="s"><span class="pill ${pillClass[j.status]}">${esc(j.status)}</span></div></div>
+        <span class="amt">${yen(jobTotal(j))}</span>
+      </label>`).join('')}
+    <label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:13.5px;cursor:pointer">
+      <input type="checkbox" id="bulkMark" checked style="width:18px;height:18px;accent-color:var(--brand)">
+      作成後、選んだ案件を「請求済」にする
+    </label>
+    <button class="btn full" onclick="makeBulkDoc('${custId}')">請求書を作成</button>
+  `);
+}
+function makeBulkDoc(custId){
+  const ids=[...document.querySelectorAll('.bulkCk:checked')].map(x=>x.value);
+  if(!ids.length)return toast('案件を選んでください');
+  const mark=document.getElementById('bulkMark').checked;
+  const p=DB.profile,c=cust(custId);
+  const jobs=ids.map(i=>DB.jobs.find(j=>j.id===i)).filter(Boolean)
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let sub=0;
+  const rows=jobs.map(j=>{
+    const items=(j.items||[]).length?(j.items):[{name:'（内容未入力）',price:0,qty:1}];
+    return items.map((it,k)=>{
+      const qty=Number(it.qty)||1,price=Number(it.price)||0,amt=price*qty;sub+=amt;
+      return `<tr>${k===0?`<td rowspan="${items.length}" style="white-space:nowrap;font-variant-numeric:tabular-nums">${fmtDate(j.date)}</td>`:''}
+        <td>${esc(it.name)}</td><td class="r">${qty}</td><td class="r">${yen(price)}</td><td class="r">${yen(amt)}</td></tr>`;
+    }).join('');
+  }).join('');
+  const rate=Number(p.taxRate??10);const tax=Math.floor(sub*rate/100);const total=sub+tax;
+  const no='I'+todayStr().replace(/-/g,'').slice(2)+'-B'+jobs.length;
+  if(mark){jobs.forEach(j=>{if(j.status==='完了')j.status='請求済';});save();}
+  showModal(`
+    <div class="mtop noprint"><h2>請求書プレビュー（${jobs.length}件まとめ）</h2><button class="x" onclick="closeModal();render()" aria-label="閉じる">×</button></div>
+    <div class="doc">
+      <h1>請求書</h1>
+      <div class="meta">
+        <div>
+          <div style="font-size:15px;font-weight:700;border-bottom:1px solid #333;padding-bottom:2px;margin-bottom:4px">${esc(c.name)} 様</div>
+          <div class="muted">発行日：${todayStr()}　No. ${esc(no)}</div>
+          <p style="margin:8px 0 6px">下記の通りご請求申し上げます。</p>
+          <div class="box">
+            <div style="font-size:11px;color:#555">御請求金額</div>
+            <div style="font-size:23px;font-weight:800;font-variant-numeric:tabular-nums">${yen(total)}<span style="font-size:12px;font-weight:600">（税込）</span></div>
+          </div>
+        </div>
+        <div class="box">
+          <div style="font-weight:700">${esc(p.yago||'（屋号未設定）')}</div>
+          <div>${esc(p.name||'')}</div>
+          <div class="muted">${esc(p.addr||'')}</div>
+          <div class="muted">${p.phone?'TEL: '+esc(p.phone):''}</div>
+          <div class="muted">${p.reg?'登録番号: '+esc(p.reg):''}</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th style="width:42px">日付</th><th>内容</th><th class="r" style="width:32px">数量</th><th class="r" style="width:70px">単価</th><th class="r" style="width:80px">金額</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end">
+        <div style="min-width:220px">
+          <div class="total-row"><span>小計</span><span>${yen(sub)}</span></div>
+          <div class="total-row"><span>消費税（${rate}%）</span><span>${yen(tax)}</span></div>
+          <div class="total-row big"><span>合計</span><span>${yen(total)}</span></div>
+        </div>
+      </div>
+      ${p.note?`<div style="margin-top:14px"><div class="muted">お支払い / 備考</div><div>${esc(p.note).replace(/\n/g,'<br>')}</div></div>`:''}
+    </div>
+    <button class="btn full noprint" style="margin-top:14px" onclick="window.print()">🖨 印刷 / PDFで保存</button>
+    ${mark?`<p class="muted noprint" style="text-align:center;margin-top:8px">✓ 選んだ案件を「請求済」にしました</p>`:''}
+  `);
+}
+
 /* ================= documents ================= */
 function makeDoc(id,type){
   let j;
@@ -722,7 +811,7 @@ function makeDoc(id,type){
       </div>
       ${type!=='領収書'?`
       <table>
-        <thead><tr><th>内容</th><th class="r" style="width:52px">数量</th><th class="r" style="width:86px">単価</th><th class="r" style="width:96px">金額</th></tr></thead>
+        <thead><tr><th>内容</th><th class="r" style="width:36px">数量</th><th class="r" style="width:74px">単価</th><th class="r" style="width:84px">金額</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
       <div style="display:flex;justify-content:flex-end">
@@ -744,6 +833,8 @@ function exportData(){
   const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='genba-note-backup-'+todayStr()+'.json';a.click();
+  DB.meta.lastExport=todayStr();DB.meta.changes=0;persist();
+  toast('書き出しました');
 }
 function importData(e){
   const file=e.target.files[0];if(!file)return;
