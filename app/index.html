@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゲンバノート｜ひとり業務管理</title>
+<style>
+  :root{
+    --bg:#f2f5f3; --card:#ffffff; --ink:#1e2a24; --sub:#5f6e66;
+    --line:#e1e7e3; --brand:#2b7a52; --brand-deep:#1f5c3d; --tint:#e6f1ea;
+    --amber:#b45309; --amber-bg:#fbf2e8; --ok:#15803d; --ok-bg:#ecfdf5;
+    --plan:#4338ca; --plan-bg:#eef2ff; --sent:#475569; --sent-bg:#eef1f4;
+    --shadow:0 1px 2px rgba(30,42,36,.06),0 2px 8px rgba(30,42,36,.05);
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+       background:var(--bg);color:var(--ink);padding-bottom:80px;font-size:15px;line-height:1.5}
+  h1,h2,h3{margin:0}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+  .num-d{font-variant-numeric:tabular-nums}
+  /* ---------- header ---------- */
+  header{background:linear-gradient(160deg,var(--brand-deep),var(--brand));color:#fff;
+         padding:14px 18px 12px;display:flex;align-items:flex-end;justify-content:space-between;
+         position:sticky;top:0;z-index:20}
+  header .brand{font-weight:800;font-size:18px;letter-spacing:.03em;line-height:1.15}
+  header .brand small{display:block;font-weight:500;font-size:10px;opacity:.75;letter-spacing:.22em}
+  header .yago{font-size:12.5px;opacity:.95;text-align:right;max-width:46%;line-height:1.3}
+  .wrap{max-width:720px;margin:0 auto;padding:16px 14px}
+  .view{display:none}
+  .view.active{display:block}
+  /* ---------- cards ---------- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+        padding:16px;margin-bottom:14px}
+  .card h3{font-size:12px;color:var(--sub);font-weight:700;margin-bottom:10px;letter-spacing:.08em}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow)}
+  .stat .num{font-size:24px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .stat .lbl{font-size:11px;color:var(--sub);margin-top:5px;letter-spacing:.03em}
+  .stat .cmp{font-size:11px;margin-top:3px;font-weight:700}
+  .stat .cmp.up{color:var(--ok)} .stat .cmp.down{color:var(--amber)}
+  .stat.hero{background:linear-gradient(150deg,var(--tint),#fff 70%);border-color:#cfe3d7}
+  .stat.hero .num{color:var(--brand-deep);font-size:27px}
+  /* alerts */
+  .alert{display:flex;align-items:center;gap:10px;border-radius:12px;padding:11px 13px;margin-bottom:8px;
+         font-size:13.5px;font-weight:600;border:1px solid transparent;width:100%;text-align:left;background:none}
+  .alert .n{font-weight:800;font-variant-numeric:tabular-nums}
+  .alert.warn{background:var(--amber-bg);color:var(--amber);border-color:#f0dcc4}
+  .alert.info{background:var(--plan-bg);color:var(--plan);border-color:#dde3fb}
+  .alert .go{margin-left:auto;opacity:.7;font-size:15px}
+  /* ---------- chart ---------- */
+  .chart{display:flex;align-items:flex-end;gap:7px;height:120px;padding-top:18px}
+  .cb{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;position:relative}
+  .cb .bar{width:100%;max-width:34px;background:var(--brand);opacity:.55;border-radius:4px 4px 0 0;min-height:2px;
+           transition:opacity .15s}
+  .cb.cur .bar{opacity:1;background:var(--brand-deep)}
+  .cb .m{font-size:10.5px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .cb .v{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:700;
+         color:var(--brand-deep);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .chart-note{font-size:11px;color:var(--sub);margin-top:8px}
+  /* ---------- buttons ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:11px;
+       padding:12px 16px;font-size:15px;font-weight:700;background:var(--brand);color:#fff;letter-spacing:.02em}
+  .btn:active{background:var(--brand-deep)}
+  .btn.full{width:100%}
+  .btn.ghost{background:#fff;color:var(--brand);border:1.5px solid var(--brand)}
+  .btn.sub{background:var(--sent-bg);color:var(--ink)}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
+  .btn.xs{padding:6px 10px;font-size:12px;border-radius:8px}
+  .btn.danger{background:#fff;color:#b91c1c;border:1px solid #eecaca}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  /* ---------- list items ---------- */
+  .item{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}
+  .item:last-child{border-bottom:none}
+  .item .main{flex:1;min-width:0}
+  .item .t{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .s{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .amt{font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;text-align:right}
+  .pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;white-space:nowrap;letter-spacing:.03em}
+  .pill.yotei{background:var(--plan-bg);color:var(--plan)}
+  .pill.kanryo{background:var(--ok-bg);color:var(--ok)}
+  .pill.seikyu{background:var(--amber-bg);color:var(--amber)}
+  .pill.nyukin{background:var(--sent-bg);color:var(--sent)}
+  .next{border:1.5px solid var(--line);background:#fff;color:var(--brand-deep);font-size:11px;font-weight:800;
+        border-radius:8px;padding:5px 8px;white-space:nowrap}
+  .next:active{background:var(--tint)}
+  .qa{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;
+      border:1px solid var(--line);background:#fff;color:var(--brand-deep);text-decoration:none;font-size:15px}
+  .empty{text-align:center;color:var(--sub);font-size:13.5px;padding:26px 10px}
+  /* onboarding */
+  .steps{counter-reset:st}
+  .step{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);align-items:center}
+  .step:last-child{border-bottom:none}
+  .step .c{counter-increment:st;width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--brand-deep);
+           display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none}
+  .step .c::before{content:counter(st)}
+  .step.done .c{background:var(--brand);color:#fff}
+  .step .d{font-size:13.5px}
+  .step .d b{display:block;font-size:14px}
+  /* ---------- forms ---------- */
+  label.f{display:block;font-size:12px;color:var(--sub);margin:12px 0 4px;font-weight:700;letter-spacing:.04em}
+  input.f,select.f,textarea.f{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  input.f:focus,select.f:focus,textarea.f:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}
+  textarea.f{min-height:64px;resize:vertical}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .search{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:11px;
+          padding:9px 12px;margin-bottom:12px}
+  .search input{border:none;outline:none;flex:1;font-size:15px;background:none}
+  .search svg{flex:none;color:var(--sub)}
+  /* ---------- modal ---------- */
+  .modal-bg{position:fixed;inset:0;background:rgba(20,30,25,.5);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;
+         padding:18px 18px 30px;overscroll-behavior:contain}
+  .modal h2{font-size:17px;margin-bottom:4px;font-weight:800}
+  .modal .mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .x{background:none;border:none;font-size:24px;color:var(--sub);line-height:1;padding:4px 8px}
+  /* line-item editor */
+  .li{display:grid;grid-template-columns:1fr 86px 34px;gap:8px;align-items:center;margin-bottom:8px}
+  .li input{padding:9px 10px;border:1px solid var(--line);border-radius:9px}
+  .li .del{background:none;border:none;color:#b91c1c;font-size:18px}
+  .total-row{display:flex;justify-content:space-between;padding:7px 0;font-size:14px;font-variant-numeric:tabular-nums}
+  .total-row.big{font-size:20px;font-weight:800;border-top:2px solid var(--ink);margin-top:6px;padding-top:10px}
+  /* customer hub */
+  .hub{display:flex;gap:8px;margin:10px 0 4px}
+  .hub a,.hub button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;
+     border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--brand-deep);
+     text-decoration:none;font-size:11.5px;font-weight:700}
+  .hub .ic{font-size:17px}
+  /* ---------- bottom nav & fab ---------- */
+  nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+      border-top:1px solid var(--line);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+  nav button{flex:1;background:none;border:none;padding:8px 2px 9px;color:var(--sub);font-size:10.5px;font-weight:600;
+             display:flex;flex-direction:column;align-items:center;gap:3px;letter-spacing:.04em}
+  nav button svg{width:22px;height:22px}
+  nav button.active{color:var(--brand-deep)}
+  nav button:focus-visible,.btn:focus-visible,.next:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+  .fab{position:fixed;right:16px;bottom:86px;width:56px;height:56px;border-radius:50%;background:var(--brand);color:#fff;
+       border:none;box-shadow:0 5px 16px rgba(31,92,61,.4);z-index:25;display:flex;align-items:center;justify-content:center}
+  .fab svg{width:26px;height:26px}
+  /* ---------- documents ---------- */
+  .doc{background:#fff;color:#111;padding:24px 22px;font-size:13px;line-height:1.65;border:1px solid var(--line);border-radius:10px}
+  .doc h1{font-size:22px;text-align:center;letter-spacing:.35em;margin-bottom:16px;font-weight:700}
+  .doc table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12px}
+  .doc th,.doc td{border:1px solid #9aa39d;padding:7px 6px;text-align:left}
+  .doc th{background:#f1f4f2;font-size:11px;white-space:nowrap}
+  .doc .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .doc .meta{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .doc .box{border:1px solid #9aa39d;padding:10px 12px;min-width:200px;border-radius:4px}
+  .doc .stamp{border:2px solid var(--brand);color:var(--brand);border-radius:6px;padding:4px 10px;font-weight:700;
+              display:inline-block;transform:rotate(-4deg);font-size:12px}
+  .muted{color:var(--sub);font-size:12px}
+  /* share sheet */
+  .share-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .share-grid a,.share-grid button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 4px;
+     border:1px solid var(--line);border-radius:12px;background:#fff;font-size:12px;font-weight:700;
+     color:var(--ink);text-decoration:none}
+  .share-grid .big{font-size:20px}
+  .msg-prev{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px;
+            white-space:pre-wrap;line-height:1.7;max-height:180px;overflow:auto}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  @media print{
+    body{background:#fff;padding:0}
+    header,nav,.fab,.noprint{display:none!important}
+    .wrap{max-width:none;padding:0}
+    .modal-bg{position:static;background:none;display:block!important}
+    .modal{max-height:none;border-radius:0;padding:0;overflow:visible}
+    .doc{border:none;border-radius:0;padding:0}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">ゲンバノート<small>GENBA NOTE</small></div>
+  <div class="yago" id="hdrYago">屋号を設定してください</div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== ホーム ===== -->
+  <section id="v-home" class="view active">
+    <div id="alerts"></div>
+    <div class="stat-grid">
+      <div class="stat hero"><div class="num" id="stMonthSales">¥0</div>
+        <div class="lbl">今月の売上</div><div class="cmp" id="stCmp"></div></div>
+      <div class="stat"><div class="num" id="stMonthJobs">0</div><div class="lbl">今月の件数</div></div>
+    </div>
+    <div class="card">
+      <h3>売上の推移（過去6ヶ月）</h3>
+      <div class="chart" id="chart"></div>
+      <div class="chart-note">完了・請求済・入金済の案件を作業日で集計</div>
+    </div>
+    <div class="card" id="onboardCard" style="display:none">
+      <h3>はじめかた</h3>
+      <div class="steps" id="onboardSteps"></div>
+    </div>
+    <div class="card">
+      <h3>今日の予定</h3>
+      <div id="todayList"></div>
+    </div>
+    <div class="card">
+      <h3>直近の予定</h3>
+      <div id="upcomingList"></div>
+    </div>
+  </section>
+
+  <!-- ===== 案件 ===== -->
+  <section id="v-jobs" class="view">
+    <div class="search noprint">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="jobSearch" placeholder="顧客名・作業内容で検索" oninput="renderJobs()">
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h3 style="margin:0">案件一覧</h3>
+        <select class="f" id="jobFilter" style="width:auto;padding:8px 10px" onchange="renderJobs()">
+          <option value="all">すべて</option>
+          <option value="予定">予定</option>
+          <option value="完了">完了（未請求）</option>
+          <option value="請求済">請求済（未入金）</option>
+          <option value="入金済">入金済</option>
+        </select>
+      </div>
+      <div id="jobList"></div>
+    </div>
+  </section>
+
+  <!-- ===== 顧客 ===== -->
+  <section id="v-customers" class="view">
+    <div class="search noprint">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="custSearch" placeholder="名前・電話番号で検索" oninput="renderCustomers()">
+    </div>
+    <div class="card">
+      <h3>顧客一覧</h3>
+      <div id="custList"></div>
+    </div>
+  </section>
+
+  <!-- ===== 設定 ===== -->
+  <section id="v-settings" class="view">
+    <div class="card">
+      <h3>屋号・事業者情報（書類に表示されます）</h3>
+      <label class="f">屋号 / 事業者名</label>
+      <input class="f" id="setYago" placeholder="例：山田おそうじサービス">
+      <label class="f">担当者名</label>
+      <input class="f" id="setName" placeholder="例：山田 太郎">
+      <div class="two">
+        <div><label class="f">電話番号</label><input class="f" id="setPhone" placeholder="090-xxxx-xxxx"></div>
+        <div><label class="f">インボイス登録番号</label><input class="f" id="setReg" placeholder="T1234…（任意）"></div>
+      </div>
+      <label class="f">住所</label>
+      <input class="f" id="setAddr" placeholder="例：東京都〇〇区…">
+      <label class="f">消費税率（書類の自動計算に使用）</label>
+      <select class="f" id="setTax">
+        <option value="10">10%（標準）</option>
+        <option value="8">8%（軽減税率）</option>
+        <option value="0">0%（免税・非課税で発行）</option>
+      </select>
+      <label class="f">振込先・備考（請求書の下部に表示）</label>
+      <textarea class="f" id="setNote" placeholder="例：〇〇銀行 △△支店 普通 1234567 ヤマダタロウ"></textarea>
+      <button class="btn full" style="margin-top:14px" onclick="saveProfile()">保存する</button>
+    </div>
+
+    <div class="card">
+      <h3>サービスメニュー（見積作成が速くなります）</h3>
+      <div id="menuList"></div>
+      <div class="li" style="margin-top:6px">
+        <input id="newMenuName" placeholder="サービス名 例：エアコン清掃">
+        <input id="newMenuPrice" type="number" inputmode="numeric" placeholder="単価">
+        <button class="btn sm" onclick="addMenu()">＋</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>データのバックアップ</h3>
+      <p class="muted" style="margin:0 0 10px">データはこの端末のブラウザ内にのみ保存されます。機種変更・ブラウザ変更の前に必ず書き出してください。</p>
+      <div class="row">
+        <button class="btn sub sm" onclick="exportData()">書き出す（JSON）</button>
+        <button class="btn sub sm" onclick="document.getElementById('importFile').click()">読み込む</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+      </div>
+    </div>
+    <p class="muted" style="text-align:center">ゲンバノート v0.2</p>
+  </section>
+
+</div>
+
+<button class="fab noprint" id="fab" onclick="fabAction()" aria-label="追加">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<nav class="noprint">
+  <button data-view="home" class="active" onclick="nav('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>ホーム</button>
+  <button data-view="jobs" onclick="nav('jobs')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 11h16"/></svg>案件</button>
+  <button data-view="customers" onclick="nav('customers')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg>顧客</button>
+  <button data-view="settings" onclick="nav('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12a7 7 0 0 0 .1 1.2l-2 1.5 2 3.5 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.5-2-1.5A7 7 0 0 0 19 12Z"/></svg>設定</button>
+</nav>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<script>
+/* ================= storage ================= */
+const DB_KEY='genba_note_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function load(){try{return JSON.parse(localStorage.getItem(DB_KEY))||{}}catch(e){return{}}}
+function seed(){
+  const d=load();
+  d.profile=Object.assign({yago:'',name:'',phone:'',reg:'',addr:'',note:'',taxRate:10},d.profile||{});
+  d.menu=d.menu||[];d.customers=d.customers||[];d.jobs=d.jobs||[];
+  d.meta=Object.assign({lastExport:'',changes:0},d.meta||{});
+  return d;
+}
+let DB=seed();
+function persist(){localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+function save(){DB.meta.changes=(DB.meta.changes||0)+1;persist();}
+
+/* ================= helpers ================= */
+const yen=n=>'¥'+(Number(n)||0).toLocaleString('ja-JP');
+const yenS=n=>{const v=Number(n)||0;return v>=10000?'¥'+(Math.round(v/1000)/10)+'万':'¥'+v.toLocaleString('ja-JP');};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const jobTotal=j=>(j.items||[]).reduce((s,i)=>s+(Number(i.price)||0)*(Number(i.qty)||1),0);
+const ym=d=>d?d.slice(0,7):'';
+const thisYM=()=>new Date().toISOString().slice(0,10).slice(0,7);
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const cust=id=>DB.customers.find(c=>c.id===id);
+const custName=id=>{const c=cust(id);return c?c.name:'（顧客未設定）';};
+const svcText=j=>(j.items||[]).map(i=>i.name).filter(Boolean).join('・')||'（内容未入力）';
+const STATUSES=['予定','完了','請求済','入金済'];
+const NEXT={'予定':'完了','完了':'請求済','請求済':'入金済'};
+const pillClass={'予定':'yotei','完了':'kanryo','請求済':'seikyu','入金済':'nyukin'};
+const SOLD=j=>['完了','請求済','入金済'].includes(j.status);
+const fmtDate=d=>{if(!d)return'日付未定';const[y,m,dd]=d.split('-');return`${Number(m)}/${Number(dd)}`;};
+
+/* ================= navigation ================= */
+let currentView='home';
+function nav(v){
+  currentView=v;
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  document.getElementById('fab').style.display=(v==='home'||v==='settings')?'none':'flex';
+  window.scrollTo(0,0);render();
+}
+function fabAction(){currentView==='customers'?openCustomer():openJob();}
+
+/* ================= render ================= */
+function render(){
+  document.getElementById('hdrYago').textContent=DB.profile.yago||'屋号を設定してください';
+  ({home:renderHome,jobs:renderJobs,customers:renderCustomers,settings:renderSettings})[currentView]();
+}
+
+/* ---------- home ---------- */
+function renderHome(){
+  const m=thisYM();
+  const sum=key=>DB.jobs.filter(j=>ym(j.date)===key&&SOLD(j)).reduce((s,j)=>s+jobTotal(j),0);
+  const cur=sum(m);
+  const prevD=new Date();prevD.setDate(1);prevD.setMonth(prevD.getMonth()-1);
+  const prev=sum(prevD.toISOString().slice(0,7));
+  document.getElementById('stMonthSales').textContent=yen(cur);
+  document.getElementById('stMonthJobs').textContent=DB.jobs.filter(j=>ym(j.date)===m).length;
+  const cmp=document.getElementById('stCmp');
+  if(prev>0){const r=Math.round((cur-prev)/prev*100);
+    cmp.textContent=(r>=0?'▲ +':'▼ ')+r+'% 先月比';cmp.className='cmp '+(r>=0?'up':'down');}
+  else cmp.textContent='';
+
+  /* alerts */
+  const unb=DB.jobs.filter(j=>j.status==='完了').length;
+  const unp=DB.jobs.filter(j=>j.status==='請求済').length;
+  let a='';
+  if(unb)a+=`<button class="alert warn" onclick="goJobs('完了')">📄 未請求の完了案件が <span class="n">${unb}件</span> あります<span class="go">›</span></button>`;
+  if(unp)a+=`<button class="alert info" onclick="goJobs('請求済')">💰 入金待ちの請求が <span class="n">${unp}件</span> あります<span class="go">›</span></button>`;
+  const mt=DB.meta||{};
+  const days=mt.lastExport?(Date.now()-new Date(mt.lastExport).getTime())/864e5:Infinity;
+  const needBk=(mt.changes>=20)||(mt.changes>0&&days>30)||(!mt.lastExport&&DB.jobs.length+DB.customers.length>=10);
+  if(needBk)a+=`<button class="alert warn" onclick="nav('settings')">💾 データのバックアップをおすすめします（端末内にのみ保存されています）<span class="go">›</span></button>`;
+  document.getElementById('alerts').innerHTML=a;
+
+  /* chart: last 6 months */
+  const months=[];const now=new Date();now.setDate(1);
+  for(let i=5;i>=0;i--){const d=new Date(now);d.setMonth(d.getMonth()-i);
+    const key=d.toISOString().slice(0,7);months.push({key,label:(d.getMonth()+1)+'月',v:sum(key)});}
+  const max=Math.max(...months.map(x=>x.v),1);
+  document.getElementById('chart').innerHTML=months.map((x,i)=>{
+    const h=Math.max(Math.round(x.v/max*92),x.v>0?6:2);
+    const curCls=i===5?' cur':'';
+    return`<div class="cb${curCls}" title="${x.label} ${yen(x.v)}">
+      ${i===5&&x.v>0?`<span class="v">${yenS(x.v)}</span>`:''}
+      <div class="bar" style="height:${h}px"></div><span class="m">${x.label}</span></div>`;
+  }).join('');
+
+  /* onboarding */
+  const p=DB.profile;
+  const steps=[
+    {done:!!p.yago,t:'屋号を設定する',d:'書類とメッセージに表示されます',go:'settings'},
+    {done:DB.menu.length>0,t:'サービスメニューを登録',d:'見積作成がワンタップに',go:'settings'},
+    {done:DB.customers.length>0,t:'顧客を1人登録',d:'よく行く先から',go:'customers'},
+    {done:DB.jobs.length>0,t:'最初の案件を入れる',d:'予定でも過去の仕事でもOK',go:'jobs'},
+  ];
+  const undone=steps.filter(s=>!s.done).length;
+  const ob=document.getElementById('onboardCard');
+  if(undone){ob.style.display='block';
+    document.getElementById('onboardSteps').innerHTML=steps.map(s=>
+      `<div class="step ${s.done?'done':''}" onclick="nav('${s.go}')" style="cursor:pointer">
+       <span class="c"></span><span class="d"><b>${s.done?'✓ ':''}${s.t}</b>${s.d}</span></div>`).join('');
+  }else ob.style.display='none';
+
+  /* today & upcoming */
+  const today=todayStr();
+  const tl=DB.jobs.filter(j=>j.date===today).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  document.getElementById('todayList').innerHTML=tl.length?tl.map(j=>jobRow(j,true)).join(''):'<div class="empty">今日の予定はありません</div>';
+  const up=DB.jobs.filter(j=>j.date>today&&j.status==='予定').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);
+  document.getElementById('upcomingList').innerHTML=up.length?up.map(j=>jobRow(j)).join(''):'<div class="empty">予定はありません</div>';
+}
+function goJobs(st){nav('jobs');document.getElementById('jobFilter').value=st;renderJobs();}
+
+/* ---------- job row ---------- */
+function jobRow(j,quick){
+  const c=cust(j.customerId);
+  const nx=NEXT[j.status];
+  const quickBtns=quick&&c?`
+    ${c.phone?`<a class="qa" href="tel:${esc(c.phone)}" onclick="event.stopPropagation()" aria-label="電話">📞</a>`:''}
+    ${c.addr?`<a class="qa" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.addr)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" aria-label="地図">🗺</a>`:''}`:'';
+  return `<div class="item" onclick="openJob('${j.id}')" style="cursor:pointer">
+    <div class="main">
+      <div class="t">${esc(custName(j.customerId))}</div>
+      <div class="s">${fmtDate(j.date)} ${esc(j.time||'')}　${esc(svcText(j))}</div>
+    </div>
+    ${quickBtns}
+    <div style="text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+      <span class="amt">${yen(jobTotal(j))}</span>
+      <span class="pill ${pillClass[j.status]}">${esc(j.status)}</span>
+    </div>
+    ${nx?`<button class="next" onclick="event.stopPropagation();advance('${j.id}')">→${nx}</button>`:''}
+  </div>`;
+}
+function advance(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  const nx=NEXT[j.status];if(!nx)return;
+  j.status=nx;save();render();toast(nx+' にしました');
+}
+
+/* ---------- jobs list ---------- */
+function renderJobs(){
+  const f=document.getElementById('jobFilter').value;
+  const q=(document.getElementById('jobSearch').value||'').trim();
+  let list=[...DB.jobs].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(f!=='all')list=list.filter(j=>j.status===f);
+  if(q)list=list.filter(j=>(custName(j.customerId)+svcText(j)+(j.memo||'')).includes(q));
+  document.getElementById('jobList').innerHTML=list.length?list.map(j=>jobRow(j)).join('')
+    :'<div class="empty">該当する案件がありません。<br>右下の＋から追加できます。</div>';
+}
+
+/* ---------- customers ---------- */
+function renderCustomers(){
+  const q=(document.getElementById('custSearch').value||'').trim();
+  let list=[...DB.customers].sort((a,b)=>(a.name||'').localeCompare(b.name||'','ja'));
+  if(q)list=list.filter(c=>((c.name||'')+(c.phone||'')).includes(q));
+  document.getElementById('custList').innerHTML=list.length?list.map(c=>{
+    const jobs=DB.jobs.filter(j=>j.customerId===c.id);
+    const total=jobs.filter(SOLD).reduce((s,j)=>s+jobTotal(j),0);
+    return `<div class="item" onclick="openCustomer('${c.id}')" style="cursor:pointer">
+      <div class="main"><div class="t">${esc(c.name)}</div>
+      <div class="s">${esc(c.phone||'電話未登録')}　案件${jobs.length}件 / 累計${yen(total)}</div></div>
+      <span class="muted">›</span></div>`;
+  }).join(''):'<div class="empty">顧客がいません。右下の＋から追加できます。</div>';
+}
+
+/* ---------- settings ---------- */
+function renderSettings(){
+  const p=DB.profile;
+  setYago.value=p.yago||'';setName.value=p.name||'';setPhone.value=p.phone||'';
+  setReg.value=p.reg||'';setAddr.value=p.addr||'';setNote.value=p.note||'';
+  setTax.value=String(p.taxRate??10);
+  document.getElementById('menuList').innerHTML=DB.menu.length?DB.menu.map(m=>
+    `<div class="item"><div class="main"><div class="t">${esc(m.name)}</div>
+     <div class="s">${yen(m.price)}</div></div>
+     <button class="btn danger sm" onclick="delMenu('${m.id}')">削除</button></div>`).join('')
+    :'<div class="empty">未登録です</div>';
+}
+function saveProfile(){
+  DB.profile={yago:setYago.value.trim(),name:setName.value.trim(),phone:setPhone.value.trim(),
+    reg:setReg.value.trim(),addr:setAddr.value.trim(),note:setNote.value.trim(),
+    taxRate:Number(setTax.value)};
+  save();render();toast('保存しました');
+}
+function addMenu(){
+  const name=newMenuName.value.trim();const price=Number(newMenuPrice.value)||0;
+  if(!name)return toast('サービス名を入力してください');
+  DB.menu.push({id:uid(),name,price});save();
+  newMenuName.value='';newMenuPrice.value='';renderSettings();
+}
+function delMenu(id){DB.menu=DB.menu.filter(m=>m.id!==id);save();renderSettings();}
+
+/* ================= customer modal ================= */
+function openCustomer(id){
+  const c=id?cust(id):{id:'',name:'',phone:'',addr:'',note:''};
+  const hist=id?DB.jobs.filter(j=>j.customerId===id).sort((a,b)=>(b.date||'').localeCompare(a.date||'')):[];
+  const billable=id?hist.filter(j=>j.status==='完了'||j.status==='請求済'):[];
+  const histHtml=hist.length?hist.slice(0,8).map(j=>
+    `<div class="item" onclick="openJob('${j.id}')" style="cursor:pointer">
+      <div class="main"><div class="t" style="font-size:13.5px">${fmtDate(j.date)}　${esc(svcText(j))}</div></div>
+      <span class="amt" style="font-size:13px">${yen(jobTotal(j))}</span>
+      <span class="pill ${pillClass[j.status]}">${esc(j.status)}</span></div>`).join('')
+    :'<div class="empty" style="padding:14px">まだ案件がありません</div>';
+  showModal(`
+    <div class="mtop"><h2>${id?esc(c.name):'顧客を追加'}</h2><button class="x" onclick="closeModal()" aria-label="閉じる">×</button></div>
+    ${id?`<div class="hub">
+      ${c.phone?`<a href="tel:${esc(c.phone)}"><span class="ic">📞</span>電話する</a>`:''}
+      ${c.addr?`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.addr)}" target="_blank" rel="noopener"><span class="ic">🗺</span>地図を開く</a>`:''}
+      <button onclick="closeModal();openJob(null,'${id}')"><span class="ic">＋</span>新規案件</button>
+    </div>`:''}
+    ${id&&billable.length?`<button class="btn ghost full sm" style="margin-top:6px" onclick="openBulkInvoice('${id}')">🧾 複数の案件をまとめて1枚の請求書に（対象 ${billable.length}件）</button>`:''}
+    <label class="f">名前 *</label><input class="f" id="cName" value="${esc(c.name)}">
+    <label class="f">電話番号</label><input class="f" id="cPhone" inputmode="tel" value="${esc(c.phone)}">
+    <label class="f">住所</label><input class="f" id="cAddr" value="${esc(c.addr)}">
+    <label class="f">メモ（鍵の場所・駐車場など）</label><textarea class="f" id="cNote">${esc(c.note)}</textarea>
+    <button class="btn full" style="margin-top:14px" onclick="saveCustomer('${id||''}')">保存</button>
+    ${id?`<h3 style="font-size:12px;color:var(--sub);margin:18px 0 4px;letter-spacing:.08em">これまでの案件</h3>${histHtml}
+    <button class="btn danger full" style="margin-top:12px" onclick="delCustomer('${id}')">この顧客を削除</button>`:''}
+  `);
+}
+function saveCustomer(id){
+  const name=cName.value.trim();if(!name)return toast('名前を入力してください');
+  const obj={name,phone:cPhone.value.trim(),addr:cAddr.value.trim(),note:cNote.value.trim()};
+  if(id)Object.assign(cust(id),obj);else DB.customers.push({id:uid(),...obj});
+  save();closeModal();render();toast('保存しました');
+}
+function delCustomer(id){
+  if(!confirm('この顧客を削除しますか？（案件は残ります）'))return;
+  DB.customers=DB.customers.filter(c=>c.id!==id);save();closeModal();render();
+}
+
+/* ================= job modal ================= */
+let draftItems=[];
+function openJob(id,presetCust){
+  const j=id?DB.jobs.find(x=>x.id===id)
+    :{id:'',date:todayStr(),time:'',customerId:presetCust||'',status:'予定',items:[],memo:''};
+  draftItems=JSON.parse(JSON.stringify(j.items&&j.items.length?j.items:[{name:'',price:'',qty:1}]));
+  const custOpts=DB.customers.map(c=>`<option value="${c.id}" ${c.id===j.customerId?'selected':''}>${esc(c.name)}</option>`).join('');
+  const menuOpts=DB.menu.map(m=>`<option value="${m.id}">${esc(m.name)} (${yen(m.price)})</option>`).join('');
+  const statusBtns=STATUSES.map(s=>`<button class="btn sm ${s===j.status?'':'sub'}" data-st="${s}" onclick="pickStatus(this)">${s}</button>`).join('');
+  showModal(`
+    <div class="mtop"><h2>${id?'案件の編集':'案件を追加'}</h2><button class="x" onclick="closeModal()" aria-label="閉じる">×</button></div>
+    <div class="two">
+      <div><label class="f">日付</label><input class="f" type="date" id="jDate" value="${esc(j.date)}"></div>
+      <div><label class="f">時間</label><input class="f" type="time" id="jTime" value="${esc(j.time)}"></div>
+    </div>
+    <label class="f">顧客</label>
+    <div class="row" style="align-items:center;flex-wrap:nowrap">
+      <select class="f" id="jCust" style="flex:1">${custOpts||'<option value="">（顧客なし）</option>'}</select>
+      <button class="btn ghost sm" onclick="quickAddCustomer()">＋新規</button>
+    </div>
+    <label class="f">作業内容 / 金額（税抜）</label>
+    ${DB.menu.length?`<select class="f" style="margin-bottom:8px" onchange="addFromMenu(this)"><option value="">＋メニューから追加…</option>${menuOpts}</select>`:''}
+    <div id="itemsBox"></div>
+    <button class="btn sub sm" onclick="addItem()" style="margin-top:2px">＋行を追加</button>
+    <div class="total-row big"><span>合計（税抜）</span><span id="jTotal">¥0</span></div>
+    <label class="f">状態</label>
+    <div class="row" id="statusRow" data-val="${esc(j.status)}">${statusBtns}</div>
+    <label class="f">メモ（自分用）</label><textarea class="f" id="jMemo">${esc(j.memo)}</textarea>
+    <button class="btn full" style="margin-top:14px" onclick="saveJob('${id||''}')">保存</button>
+    <div class="row" style="margin-top:8px">
+      <button class="btn ghost sm" style="flex:1" onclick="makeDoc('${id||''}','見積書')">見積書</button>
+      <button class="btn ghost sm" style="flex:1" onclick="makeDoc('${id||''}','請求書')">請求書</button>
+      <button class="btn ghost sm" style="flex:1" onclick="makeDoc('${id||''}','領収書')">領収書</button>
+    </div>
+    ${id?`
+    <button class="btn sub full sm" style="margin-top:8px" onclick="openMessage('${id}')">💬 お客様へのメッセージを作成（確認・請求・お礼）</button>
+    <div class="row" style="margin-top:8px">
+      <button class="btn sub sm" style="flex:1" onclick="dupJob('${id}')">⟳ この案件を複製（リピート）</button>
+      <button class="btn danger sm" style="flex:1" onclick="delJob('${id}')">削除</button>
+    </div>`:''}
+  `);
+  renderItems();
+}
+function renderItems(){
+  const box=document.getElementById('itemsBox');if(!box)return;
+  box.innerHTML=draftItems.map((it,i)=>`
+    <div class="li">
+      <input placeholder="内容" value="${esc(it.name)}" oninput="draftItems[${i}].name=this.value">
+      <input type="number" inputmode="numeric" placeholder="金額" value="${esc(it.price)}" oninput="draftItems[${i}].price=this.value;calcTotal()">
+      <button class="del" onclick="rmItem(${i})" aria-label="行を削除">×</button>
+    </div>`).join('');
+  calcTotal();
+}
+function addItem(){draftItems.push({name:'',price:'',qty:1});renderItems();}
+function rmItem(i){draftItems.splice(i,1);if(!draftItems.length)draftItems.push({name:'',price:'',qty:1});renderItems();}
+function addFromMenu(sel){
+  const m=DB.menu.find(x=>x.id===sel.value);if(!m)return;
+  if(draftItems.length===1&&!draftItems[0].name&&!draftItems[0].price)draftItems=[];
+  draftItems.push({name:m.name,price:m.price,qty:1});sel.value='';renderItems();
+}
+function calcTotal(){
+  const t=draftItems.reduce((s,i)=>s+(Number(i.price)||0)*(Number(i.qty)||1),0);
+  const el=document.getElementById('jTotal');if(el)el.textContent=yen(t);
+}
+function pickStatus(btn){
+  document.getElementById('statusRow').dataset.val=btn.dataset.st;
+  document.querySelectorAll('#statusRow button').forEach(b=>b.classList.toggle('sub',b!==btn));
+}
+function quickAddCustomer(){
+  const name=prompt('顧客名を入力');if(!name)return;
+  const c={id:uid(),name:name.trim(),phone:'',addr:'',note:''};
+  DB.customers.push(c);save();
+  document.getElementById('jCust').insertAdjacentHTML('beforeend',`<option value="${c.id}" selected>${esc(c.name)}</option>`);
+}
+function collectDraft(){
+  return draftItems.filter(i=>i.name||i.price)
+    .map(i=>({name:(i.name||'').trim(),price:Number(i.price)||0,qty:Number(i.qty)||1}));
+}
+function saveJob(id){
+  const obj={date:jDate.value,time:jTime.value,customerId:jCust.value,
+    status:document.getElementById('statusRow').dataset.val,items:collectDraft(),memo:jMemo.value.trim()};
+  if(id)Object.assign(DB.jobs.find(x=>x.id===id),obj);
+  else DB.jobs.push({id:uid(),...obj});
+  save();closeModal();render();toast('保存しました');
+}
+function dupJob(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  const copy=JSON.parse(JSON.stringify(j));
+  copy.id=uid();copy.date=todayStr();copy.status='予定';
+  DB.jobs.push(copy);save();closeModal();render();
+  toast('複製しました（日付は今日・状態は予定）');
+  openJob(copy.id);
+}
+function delJob(id){if(!confirm('この案件を削除しますか？'))return;DB.jobs=DB.jobs.filter(j=>j.id!==id);save();closeModal();render();}
+
+/* ================= messages (reminder / invoice / thanks) ================= */
+function msgTemplates(j){
+  const p=DB.profile,c=cust(j.customerId);
+  const name=c?c.name:'お客';
+  const sign=p.yago?`\n\n${p.yago}${p.name?' '+p.name:''}${p.phone?'\nTEL: '+p.phone:''}`:'';
+  const dt=`${fmtDate(j.date)}${j.time?' '+j.time:''}`;
+  const total=jobTotal(j);const rate=Number(p.taxRate??10);
+  const inTax=total+Math.floor(total*rate/100);
+  return[
+    {k:'前日リマインド',icon:'🔔',text:
+`${name}様\nいつもありがとうございます。${p.yago||'担当'}です。\n\n${dt}より「${svcText(j)}」でお伺いいたします。\nご都合が悪くなった場合は、お手数ですがこのメッセージにご返信ください。\n\n当日はどうぞよろしくお願いいたします。${sign}`},
+    {k:'請求のご案内',icon:'📄',text:
+`${name}様\n${p.yago||'担当'}です。先日は「${svcText(j)}」をご利用いただきありがとうございました。\n\nご請求金額：${yen(inTax)}（税込）\n${p.note?'お支払い方法：\n'+p.note+'\n':''}\nご不明な点がございましたらお気軽にご連絡ください。${sign}`},
+    {k:'お礼・次回のご案内',icon:'🙏',text:
+`${name}様\n本日は「${svcText(j)}」をご利用いただき、誠にありがとうございました。${p.yago||'担当'}です。\n\n仕上がりで気になる点がございましたら、いつでもご連絡ください。\n次回のご予約もお待ちしております。${sign}`},
+  ];
+}
+function openMessage(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  const tpls=msgTemplates(j);
+  showModal(`
+    <div class="mtop"><h2>メッセージを作成</h2><button class="x" onclick="closeModal()" aria-label="閉じる">×</button></div>
+    <p class="muted" style="margin:0 0 10px">${esc(custName(j.customerId))}様宛の文面をワンタップで作成し、LINEやメールで送れます。</p>
+    <div class="row" id="tplRow">
+      ${tpls.map((t,i)=>`<button class="btn sm ${i===0?'':'sub'}" onclick="pickTpl(${i},'${id}',this)">${t.icon} ${t.k}</button>`).join('')}
+    </div>
+    <div class="msg-prev" id="msgPrev" style="margin-top:10px"></div>
+    <div class="share-grid">
+      <a id="shLine" target="_blank" rel="noopener"><span class="big">💬</span>LINEで送る</a>
+      <a id="shMail"><span class="big">✉️</span>メールで送る</a>
+      <button onclick="copyMsg()"><span class="big">📋</span>コピー</button>
+    </div>
+    <p class="muted" style="margin-top:10px">※送信前に文面は自由に手直しして構いません（コピーして編集がおすすめ）</p>
+  `);
+  window._tpls=tpls;pickTpl(0,id,document.querySelector('#tplRow button'));
+}
+function pickTpl(i,id,btn){
+  document.querySelectorAll('#tplRow button').forEach(b=>b.classList.toggle('sub',b!==btn));
+  const t=window._tpls[i];window._curMsg=t.text;
+  document.getElementById('msgPrev').textContent=t.text;
+  const enc=encodeURIComponent(t.text);
+  document.getElementById('shLine').href='https://line.me/R/share?text='+enc;
+  document.getElementById('shMail').href='mailto:?body='+enc;
+}
+function copyMsg(){
+  (navigator.clipboard?navigator.clipboard.writeText(window._curMsg):Promise.reject())
+    .then(()=>toast('コピーしました'))
+    .catch(()=>{const ta=document.createElement('textarea');ta.value=window._curMsg;
+      document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('コピーしました');});
+}
+
+/* ================= bulk invoice (まとめて請求) ================= */
+function openBulkInvoice(custId){
+  const c=cust(custId);if(!c)return;
+  const jobs=DB.jobs.filter(j=>j.customerId===custId&&(j.status==='完了'||j.status==='請求済'))
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  showModal(`
+    <div class="mtop"><h2>まとめて請求書</h2><button class="x" onclick="closeModal()" aria-label="閉じる">×</button></div>
+    <p class="muted" style="margin:0 0 8px">${esc(c.name)}様の未入金の案件から、1枚の請求書に含めるものを選んでください。</p>
+    ${jobs.map(j=>`
+      <label class="item" style="cursor:pointer">
+        <input type="checkbox" class="bulkCk" value="${j.id}" ${j.status==='完了'?'checked':''} style="width:19px;height:19px;accent-color:var(--brand);flex:none">
+        <div class="main"><div class="t" style="font-size:14px">${fmtDate(j.date)}　${esc(svcText(j))}</div>
+        <div class="s"><span class="pill ${pillClass[j.status]}">${esc(j.status)}</span></div></div>
+        <span class="amt">${yen(jobTotal(j))}</span>
+      </label>`).join('')}
+    <label style="display:flex;gap:8px;align-items:center;margin:12px 0;font-size:13.5px;cursor:pointer">
+      <input type="checkbox" id="bulkMark" checked style="width:18px;height:18px;accent-color:var(--brand)">
+      作成後、選んだ案件を「請求済」にする
+    </label>
+    <button class="btn full" onclick="makeBulkDoc('${custId}')">請求書を作成</button>
+  `);
+}
+function makeBulkDoc(custId){
+  const ids=[...document.querySelectorAll('.bulkCk:checked')].map(x=>x.value);
+  if(!ids.length)return toast('案件を選んでください');
+  const mark=document.getElementById('bulkMark').checked;
+  const p=DB.profile,c=cust(custId);
+  const jobs=ids.map(i=>DB.jobs.find(j=>j.id===i)).filter(Boolean)
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let sub=0;
+  const rows=jobs.map(j=>{
+    const items=(j.items||[]).length?(j.items):[{name:'（内容未入力）',price:0,qty:1}];
+    return items.map((it,k)=>{
+      const qty=Number(it.qty)||1,price=Number(it.price)||0,amt=price*qty;sub+=amt;
+      return `<tr>${k===0?`<td rowspan="${items.length}" style="white-space:nowrap;font-variant-numeric:tabular-nums">${fmtDate(j.date)}</td>`:''}
+        <td>${esc(it.name)}</td><td class="r">${qty}</td><td class="r">${yen(price)}</td><td class="r">${yen(amt)}</td></tr>`;
+    }).join('');
+  }).join('');
+  const rate=Number(p.taxRate??10);const tax=Math.floor(sub*rate/100);const total=sub+tax;
+  const no='I'+todayStr().replace(/-/g,'').slice(2)+'-B'+jobs.length;
+  if(mark){jobs.forEach(j=>{if(j.status==='完了')j.status='請求済';});save();}
+  showModal(`
+    <div class="mtop noprint"><h2>請求書プレビュー（${jobs.length}件まとめ）</h2><button class="x" onclick="closeModal();render()" aria-label="閉じる">×</button></div>
+    <div class="doc">
+      <h1>請求書</h1>
+      <div class="meta">
+        <div>
+          <div style="font-size:15px;font-weight:700;border-bottom:1px solid #333;padding-bottom:2px;margin-bottom:4px">${esc(c.name)} 様</div>
+          <div class="muted">発行日：${todayStr()}　No. ${esc(no)}</div>
+          <p style="margin:8px 0 6px">下記の通りご請求申し上げます。</p>
+          <div class="box">
+            <div style="font-size:11px;color:#555">御請求金額</div>
+            <div style="font-size:23px;font-weight:800;font-variant-numeric:tabular-nums">${yen(total)}<span style="font-size:12px;font-weight:600">（税込）</span></div>
+          </div>
+        </div>
+        <div class="box">
+          <div style="font-weight:700">${esc(p.yago||'（屋号未設定）')}</div>
+          <div>${esc(p.name||'')}</div>
+          <div class="muted">${esc(p.addr||'')}</div>
+          <div class="muted">${p.phone?'TEL: '+esc(p.phone):''}</div>
+          <div class="muted">${p.reg?'登録番号: '+esc(p.reg):''}</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th style="width:42px">日付</th><th>内容</th><th class="r" style="width:32px">数量</th><th class="r" style="width:70px">単価</th><th class="r" style="width:80px">金額</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end">
+        <div style="min-width:220px">
+          <div class="total-row"><span>小計</span><span>${yen(sub)}</span></div>
+          <div class="total-row"><span>消費税（${rate}%）</span><span>${yen(tax)}</span></div>
+          <div class="total-row big"><span>合計</span><span>${yen(total)}</span></div>
+        </div>
+      </div>
+      ${p.note?`<div style="margin-top:14px"><div class="muted">お支払い / 備考</div><div>${esc(p.note).replace(/\n/g,'<br>')}</div></div>`:''}
+    </div>
+    <button class="btn full noprint" style="margin-top:14px" onclick="window.print()">🖨 印刷 / PDFで保存</button>
+    ${mark?`<p class="muted noprint" style="text-align:center;margin-top:8px">✓ 選んだ案件を「請求済」にしました</p>`:''}
+  `);
+}
+
+/* ================= documents ================= */
+function makeDoc(id,type){
+  let j;
+  if(id)j=DB.jobs.find(x=>x.id===id);
+  else j={date:jDate.value,time:jTime.value,customerId:jCust.value,items:collectDraft()};
+  const p=DB.profile,c=cust(j.customerId);
+  const items=(j.items||[]).map(i=>({name:i.name,price:Number(i.price)||0,qty:Number(i.qty)||1}));
+  const sub=items.reduce((s,i)=>s+i.price*i.qty,0);
+  const rate=Number(p.taxRate??10);
+  const tax=Math.floor(sub*rate/100);const total=sub+tax;
+  const pref={'見積書':'Q','請求書':'I','領収書':'R'}[type];
+  const no=pref+(j.date||todayStr()).replace(/-/g,'').slice(2)+'-'+(((DB.jobs.indexOf(j))+1)||1);
+  const issueDate=type==='領収書'?todayStr():(j.date||todayStr());
+  const rows=items.map(i=>`<tr><td>${esc(i.name)}</td><td class="r">${i.qty}</td>
+     <td class="r">${yen(i.price)}</td><td class="r">${yen(i.price*i.qty)}</td></tr>`).join('')
+     ||'<tr><td colspan="4" style="text-align:center">項目がありません</td></tr>';
+  const amountLabel={'見積書':'御見積金額','請求書':'御請求金額','領収書':'領収金額'}[type];
+  const lead={'見積書':'下記の通りお見積り申し上げます。','請求書':'下記の通りご請求申し上げます。',
+              '領収書':'下記の通り領収いたしました。'}[type];
+  showModal(`
+    <div class="mtop noprint"><h2>${type}プレビュー</h2><button class="x" onclick="closeModal()" aria-label="閉じる">×</button></div>
+    <div class="doc">
+      <h1>${type}</h1>
+      <div class="meta">
+        <div>
+          <div style="font-size:15px;font-weight:700;border-bottom:1px solid #333;padding-bottom:2px;margin-bottom:4px">${esc(c?c.name:'　')} 様</div>
+          <div class="muted">発行日：${esc(issueDate)}　No. ${esc(no)}</div>
+          <p style="margin:8px 0 6px">${lead}</p>
+          <div class="box">
+            <div style="font-size:11px;color:#555">${amountLabel}</div>
+            <div style="font-size:23px;font-weight:800;font-variant-numeric:tabular-nums">${yen(total)}<span style="font-size:12px;font-weight:600">（税込）</span></div>
+          </div>
+          ${type==='領収書'?`<p style="margin-top:8px">但し ${esc(svcText(j))} 代として<br><span class="stamp">上記正に領収いたしました</span></p>`:''}
+        </div>
+        <div class="box">
+          <div style="font-weight:700">${esc(p.yago||'（屋号未設定）')}</div>
+          <div>${esc(p.name||'')}</div>
+          <div class="muted">${esc(p.addr||'')}</div>
+          <div class="muted">${p.phone?'TEL: '+esc(p.phone):''}</div>
+          <div class="muted">${p.reg?'登録番号: '+esc(p.reg):''}</div>
+        </div>
+      </div>
+      ${type!=='領収書'?`
+      <table>
+        <thead><tr><th>内容</th><th class="r" style="width:36px">数量</th><th class="r" style="width:74px">単価</th><th class="r" style="width:84px">金額</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="display:flex;justify-content:flex-end">
+        <div style="min-width:220px">
+          <div class="total-row"><span>小計</span><span>${yen(sub)}</span></div>
+          <div class="total-row"><span>消費税（${rate}%）</span><span>${yen(tax)}</span></div>
+          <div class="total-row big"><span>合計</span><span>${yen(total)}</span></div>
+        </div>
+      </div>`:''}
+      ${p.note&&type==='請求書'?`<div style="margin-top:14px"><div class="muted">お支払い / 備考</div><div>${esc(p.note).replace(/\n/g,'<br>')}</div></div>`:''}
+    </div>
+    <button class="btn full noprint" style="margin-top:14px" onclick="window.print()">🖨 印刷 / PDFで保存</button>
+    <p class="muted noprint" style="text-align:center;margin-top:8px">※消費税は設定の税率（${rate}%）で自動計算しています</p>
+  `);
+}
+
+/* ================= backup ================= */
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='genba-note-backup-'+todayStr()+'.json';a.click();
+  DB.meta.lastExport=todayStr();DB.meta.changes=0;persist();
+  toast('書き出しました');
+}
+function sanitizeImport(d){
+  const S=v=>typeof v==='string'?v.slice(0,2000):'';
+  const ID=v=>{const s=String(v==null?'':v).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,32);return s||uid();};
+  const DATE=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?v:'';
+  const TIME=v=>/^\d{2}:\d{2}$/.test(v)?v:'';
+  const p=d&&typeof d.profile==='object'&&d.profile?d.profile:{};
+  return {
+    profile:{yago:S(p.yago),name:S(p.name),phone:S(p.phone),reg:S(p.reg),addr:S(p.addr),note:S(p.note),
+      taxRate:[0,8,10].includes(Number(p.taxRate))?Number(p.taxRate):10},
+    menu:(Array.isArray(d.menu)?d.menu:[]).slice(0,500).map(m=>({id:ID(m&&m.id),name:S(m&&m.name),price:Number(m&&m.price)||0})),
+    customers:(Array.isArray(d.customers)?d.customers:[]).slice(0,5000).map(c=>({id:ID(c&&c.id),
+      name:S(c&&c.name),phone:S(c&&c.phone),addr:S(c&&c.addr),note:S(c&&c.note)})),
+    jobs:(Array.isArray(d.jobs)?d.jobs:[]).slice(0,20000).map(j=>({id:ID(j&&j.id),
+      date:DATE(j&&j.date),time:TIME(j&&j.time),customerId:String(j&&j.customerId||'').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,32),
+      status:STATUSES.includes(j&&j.status)?j.status:'予定',
+      items:(Array.isArray(j&&j.items)?j.items:[]).slice(0,100).map(i=>({name:S(i&&i.name),price:Number(i&&i.price)||0,qty:Number(i&&i.qty)||1})),
+      memo:S(j&&j.memo)})),
+    meta:{lastExport:DATE(d.meta&&d.meta.lastExport),changes:Number(d.meta&&d.meta.changes)||0}
+  };
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(!confirm('現在のデータを上書きします。よろしいですか？'))return;
+    DB=sanitizeImport(d);persist();render();toast('読み込みました');
+  }catch(err){toast('ファイルを読み込めませんでした');}
+  finally{e.target.value='';}};
+  r.readAsText(file);
+}
+
+/* ================= modal & toast ================= */
+function showModal(html){document.getElementById('modalBody').innerHTML=html;document.getElementById('modalBg').classList.add('show');}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+let toastT;
+function toast(msg){
+  let el=document.getElementById('toast');
+  if(!el){el=document.createElement('div');el.id='toast';
+    el.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#1e2a24;color:#fff;padding:10px 18px;border-radius:24px;font-size:14px;z-index:99;opacity:0;transition:.2s;pointer-events:none';
+    document.body.appendChild(el);}
+  el.textContent=msg;el.style.opacity='1';
+  clearTimeout(toastT);toastT=setTimeout(()=>el.style.opacity='0',1600);
+}
+
+/* ================= first run ================= */
+document.getElementById('fab').style.display='none';
+render();
+</script>
+</body>
+</html>

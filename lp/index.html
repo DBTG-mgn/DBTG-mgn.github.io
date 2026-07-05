@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ゲンバノート｜現場仕事の1日を、これひとつで。</title>
+<meta name="description" content="出張・訪問サービスの個人事業主のための無料業務アプリ。予定・顧客・見積・請求・入金・お客様へのLINE連絡までスマホひとつで。登録不要・広告なし。">
+<style>
+  :root{
+    --ink:#1e2a24; --sub:#5f6e66; --line:#e1e7e3;
+    --paper:#ffffff; --field:#f2f5f3;
+    --brand:#2b7a52; --deep:#1f5c3d; --night:#14281e; --tint:#e6f1ea;
+    --amber:#b45309; --amber-bg:#fbf2e8;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;
+       color:var(--ink);background:var(--paper);line-height:1.75;font-size:15.5px;-webkit-text-size-adjust:100%}
+  h1,h2,h3,p{margin:0}
+  a{color:inherit}
+  img{max-width:100%}
+  .wrap{max-width:960px;margin:0 auto;padding:0 22px}
+  /* ===== hero ===== */
+  .hero{background:linear-gradient(168deg,var(--night) 0%,var(--deep) 58%,var(--brand) 100%);color:#fff;
+        padding:54px 0 0;overflow:hidden}
+  .hero .wrap{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-end;justify-content:space-between}
+  .hero .copy{max-width:520px;padding-bottom:56px}
+  .kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.18em;color:#bfe3cf;
+          border:1px solid rgba(191,227,207,.4);border-radius:20px;padding:4px 14px;margin-bottom:22px}
+  .hero h1{font-size:clamp(30px,6.2vw,44px);font-weight:900;line-height:1.32;letter-spacing:.01em;text-wrap:balance}
+  .hero h1 .u{background:linear-gradient(transparent 68%,rgba(255,255,255,.28) 68%)}
+  .hero .lead{margin-top:18px;font-size:15.5px;color:#d9eae0;max-width:40em}
+  .cta{display:inline-flex;align-items:center;gap:10px;background:#fff;color:var(--deep);font-weight:800;
+       font-size:16.5px;padding:15px 30px;border-radius:14px;text-decoration:none;margin-top:28px;
+       box-shadow:0 6px 22px rgba(0,0,0,.25)}
+  .cta:active{transform:translateY(1px)}
+  .cta .ar{font-size:19px;line-height:1}
+  .cta-note{display:block;margin-top:12px;font-size:12.5px;color:#bfe3cf}
+  /* phone mock */
+  .phone{width:250px;flex:none;background:#0d1a13;border-radius:30px 30px 0 0;padding:10px 10px 0;margin:0 auto;
+         box-shadow:0 -8px 40px rgba(0,0,0,.35)}
+  .scr{background:var(--field);border-radius:20px 20px 0 0;overflow:hidden;font-size:10px;color:var(--ink)}
+  .scr .bar{background:linear-gradient(160deg,var(--deep),var(--brand));color:#fff;padding:9px 11px;font-weight:800;font-size:11px}
+  .scr .bar small{display:block;font-weight:500;font-size:7px;opacity:.75;letter-spacing:.2em}
+  .scr .pad{padding:8px}
+  .m-alert{background:var(--amber-bg);color:var(--amber);border-radius:7px;padding:6px 8px;font-weight:700;font-size:9px;margin-bottom:7px}
+  .m-stats{display:flex;gap:6px;margin-bottom:7px}
+  .m-stat{flex:1;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 8px}
+  .m-stat b{display:block;font-size:13px;color:var(--deep)}
+  .m-stat span{font-size:8px;color:var(--sub)}
+  .m-card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px}
+  .m-card h4{margin:0 0 5px;font-size:8px;color:var(--sub);letter-spacing:.08em}
+  .m-bars{display:flex;align-items:flex-end;gap:5px;height:52px}
+  .m-bars i{flex:1;background:var(--brand);opacity:.5;border-radius:2px 2px 0 0}
+  .m-bars i:last-child{opacity:1;background:var(--deep)}
+  .m-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:9px}
+  .m-row:first-of-type{border-top:none}
+  .m-pill{background:var(--tint);color:var(--deep);border-radius:8px;padding:1px 6px;font-size:8px;font-weight:800}
+  /* ===== promise ===== */
+  .promise{background:var(--night);color:#fff;padding:20px 0}
+  .promise .wrap{display:flex;flex-wrap:wrap;gap:8px 26px;justify-content:center;font-size:13.5px;font-weight:700}
+  .promise span{display:flex;align-items:center;gap:7px;color:#cfe8da}
+  .promise b{color:#fff}
+  /* ===== sections ===== */
+  section{padding:58px 0}
+  .sec-k{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--brand);margin-bottom:10px}
+  h2{font-size:clamp(22px,4.4vw,30px);font-weight:900;line-height:1.4;letter-spacing:.01em;text-wrap:balance}
+  .sec-lead{margin-top:14px;color:var(--sub);max-width:38em}
+  /* pain */
+  .pain{background:var(--field)}
+  .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:28px}
+  .pain-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+  .pain-card .q{font-weight:800;font-size:15.5px;line-height:1.6}
+  .pain-card .a{margin-top:10px;font-size:13.5px;color:var(--sub)}
+  .pain-card .a b{color:var(--deep)}
+  /* features */
+  .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:28px}
+  .feat{border:1px solid var(--line);border-radius:14px;padding:20px;background:#fff}
+  .feat .ic{width:40px;height:40px;border-radius:11px;background:var(--tint);color:var(--deep);
+            display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:12px}
+  .feat h3{font-size:16px;font-weight:800;margin-bottom:7px}
+  .feat p{font-size:13.5px;color:var(--sub)}
+  /* steps */
+  .steps{background:var(--field)}
+  .step-list{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;position:relative}
+  .step .n{font-size:12px;font-weight:900;color:var(--brand);letter-spacing:.12em;margin-bottom:8px}
+  .step h3{font-size:15.5px;font-weight:800;margin-bottom:6px}
+  .step p{font-size:13px;color:var(--sub)}
+  /* data honesty */
+  .data-box{margin-top:26px;border:1.5px solid var(--line);border-radius:16px;padding:24px;background:#fff}
+  .data-box h3{font-size:16px;font-weight:800;margin-bottom:8px}
+  .data-box p{font-size:14px;color:var(--sub)}
+  .data-box p b{color:var(--ink)}
+  .data-box .pt{display:flex;gap:10px;margin-top:14px;font-size:13.5px}
+  .data-box .pt .d{color:var(--brand);font-weight:900;flex:none}
+  /* compare */
+  .cmp-wrap{overflow-x:auto;margin-top:28px;border:1px solid var(--line);border-radius:14px}
+  table.cmp{border-collapse:collapse;width:100%;min-width:600px;font-size:13.5px}
+  .cmp th,.cmp td{padding:12px 14px;text-align:center;border-bottom:1px solid var(--line)}
+  .cmp thead th{background:var(--field);font-size:13px;letter-spacing:.02em}
+  .cmp tbody tr:last-child td{border-bottom:none}
+  .cmp td:first-child,.cmp th:first-child{text-align:left;font-weight:700;font-size:12.5px;color:var(--sub);
+     position:sticky;left:0;background:#fff;min-width:118px}
+  .cmp thead th:first-child{background:var(--field)}
+  .cmp .gn{background:var(--tint);font-weight:800;color:var(--deep)}
+  .cmp thead .gn{background:var(--brand);color:#fff}
+  .cmp .ng{color:var(--amber)}
+  .cmp-note{font-size:11.5px;color:var(--sub);margin-top:10px}
+  /* faq */
+  details{border-bottom:1px solid var(--line);padding:4px 0}
+  summary{cursor:pointer;font-weight:800;font-size:15px;padding:14px 4px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  summary::after{content:"＋";color:var(--brand);font-weight:400;flex:none}
+  details[open] summary::after{content:"−"}
+  details p{padding:0 4px 16px;font-size:14px;color:var(--sub)}
+  /* final cta */
+  .final{background:linear-gradient(168deg,var(--deep),var(--brand));color:#fff;text-align:center}
+  .final h2{color:#fff}
+  .final .sec-k{color:#bfe3cf}
+  footer{padding:30px 0 44px;text-align:center;font-size:12px;color:var(--sub)}
+  footer a{color:var(--sub)}
+  @media (max-width:640px){
+    .hero .copy{padding-bottom:40px}
+    .hero .wrap{gap:10px}
+    section{padding:46px 0}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<div class="hero">
+  <div class="wrap">
+    <div class="copy">
+      <span class="kicker">出張・訪問サービスの個人事業主のための業務アプリ</span>
+      <h1>現場仕事の1日を、<br><span class="u">これひとつで。</span></h1>
+      <p class="lead">今日の予定、顧客カルテ、見積・請求・領収書、お客様へのLINE連絡、売上の集計。
+      バラバラだった段取りを、スマホの中のノート1冊にまとめました。</p>
+      <a class="cta" href="../app/">無料で使ってみる<span class="ar">→</span></a>
+      <span class="cta-note">登録不要・インストール不要。開いたらすぐ使えます。</span>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="scr">
+        <div class="bar">ゲンバノート<small>GENBA NOTE</small></div>
+        <div class="pad">
+          <div class="m-alert">📄 未請求の完了案件が 2件 あります</div>
+          <div class="m-stats">
+            <div class="m-stat"><b>¥312,000</b><span>今月の売上</span></div>
+            <div class="m-stat"><b>18</b><span>今月の件数</span></div>
+          </div>
+          <div class="m-card">
+            <h4>売上の推移（過去6ヶ月）</h4>
+            <div class="m-bars"><i style="height:30%"></i><i style="height:42%"></i><i style="height:38%"></i><i style="height:58%"></i><i style="height:72%"></i><i style="height:88%"></i></div>
+          </div>
+          <div class="m-card" style="margin-top:7px">
+            <h4>今日の予定</h4>
+            <div class="m-row"><span><b>田中様</b>　10:00 エアコン清掃</span><span class="m-pill">予定</span></div>
+            <div class="m-row"><span><b>佐藤商店</b>　14:00 換気扇清掃</span><span class="m-pill">予定</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PROMISE ================= -->
+<div class="promise">
+  <div class="wrap">
+    <span>✓ <b>ずっと無料</b>（基本機能）</span>
+    <span>✓ <b>広告なし</b></span>
+    <span>✓ <b>登録・ログイン不要</b></span>
+    <span>✓ <b>書類に透かしなし</b></span>
+    <span>✓ <b>圏外でも動く</b></span>
+  </div>
+</div>
+
+<!-- ================= PAIN ================= -->
+<section class="pain">
+  <div class="wrap">
+    <p class="sec-k">こんな毎日になっていませんか</p>
+    <h2>現場が終わっても、事務仕事は終わらない。</h2>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <p class="q">「予定は手帳、顧客はLINE、請求書は家のパソコン」</p>
+        <p class="a">情報がバラバラだと、現場の合間に何も進められません。ゲンバノートは<b>予定・顧客・書類・売上がぜんぶ繋がった1つのノート</b>。現場の駐車場で、次の段取りまで終わります。</p>
+      </div>
+      <div class="pain-card">
+        <p class="q">「請求書を出し忘れて、月末に青ざめる」</p>
+        <p class="a">仕事を「完了」にするだけで、<b>未請求・未入金をアプリが数えて警告</b>。取りこぼしていたお金が、ホーム画面の一番上に出てきます。</p>
+      </div>
+      <div class="pain-card">
+        <p class="q">「連絡不足でドタキャン。お礼を忘れてリピートも来ない」</p>
+        <p class="a">前日のリマインド・請求のご案内・作業後のお礼。<b>丁寧な文面をワンタップで作って、そのままLINEで送信</b>。当日キャンセルが減り、「マメな人」として次の指名に繋がります。</p>
+      </div>
+      <div class="pain-card">
+        <p class="q">「無料アプリは広告と透かしだらけ。法人向けは月1万円超」</p>
+        <p class="a">無料の書類アプリは広告が出て、書類に透かしが入るものも。かといって法人向けの現場管理システムは<b>初期費用数万円+月1万円以上</b>。ひとりの仕事に合う道具が、ずっとありませんでした。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section>
+  <div class="wrap">
+    <p class="sec-k">できること</p>
+    <h2>1日の流れに、ぜんぶ寄り添う。</h2>
+    <p class="sec-lead">朝の段取りから、現場、請求、入金の確認まで。出張・訪問の仕事の順番どおりに作ってあります。</p>
+    <div class="feat-grid">
+      <div class="feat"><div class="ic">🗓</div><h3>今日の予定と地図・電話</h3><p>今日行く現場が時間順に並び、電話発信と地図アプリがワンタップ。</p></div>
+      <div class="feat"><div class="ic">👤</div><h3>顧客カルテ</h3><p>連絡先・住所・鍵や駐車場のメモ・過去の作業履歴と累計売上を1画面に。</p></div>
+      <div class="feat"><div class="ic">🧾</div><h3>見積・請求・領収書</h3><p>その場で作ってPDF保存・印刷。インボイス登録番号・消費税率にも対応。</p></div>
+      <div class="feat"><div class="ic">🗂</div><h3>まとめて請求書</h3><p>月に何度も伺うお客様には、複数の作業を日付つきで1枚の請求書に合算。</p></div>
+      <div class="feat"><div class="ic">💬</div><h3>お客様へのメッセージ</h3><p>前日確認・請求案内・お礼の3種の文面を自動作成。LINE・メールですぐ送れる。</p></div>
+      <div class="feat"><div class="ic">📈</div><h3>売上がひと目で</h3><p>今月の売上と先月比、過去6ヶ月のグラフ。未請求・未入金の警告つき。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COMPARE ================= -->
+<section>
+  <div class="wrap">
+    <p class="sec-k">選択肢をくらべる</p>
+    <h2>「書類だけ」でも、「法人向け」でもなく。</h2>
+    <div class="cmp-wrap">
+      <table class="cmp">
+        <thead><tr>
+          <th></th><th>無料の書類アプリ</th><th>法人向け現場管理</th><th class="gn">ゲンバノート</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>料金</td><td>無料〜月500円</td><td class="ng">初期数万円＋月1万円超</td><td class="gn">無料</td></tr>
+          <tr><td>広告</td><td class="ng">あり（有料でも出るものも）</td><td>なし</td><td class="gn">なし</td></tr>
+          <tr><td>会員登録</td><td class="ng">必要</td><td class="ng">営業経由で契約</td><td class="gn">不要</td></tr>
+          <tr><td>書類の透かし</td><td class="ng">無料版は入るものも</td><td>なし</td><td class="gn">なし</td></tr>
+          <tr><td>まとめて請求</td><td class="ng">有料オプション</td><td>あり</td><td class="gn">無料で標準</td></tr>
+          <tr><td>予定・顧客・売上まで一体</td><td class="ng">✕（書類だけ）</td><td>○</td><td class="gn">○</td></tr>
+          <tr><td>データの置き場</td><td>運営会社のサーバー</td><td>運営会社のサーバー</td><td class="gn">あなたの端末の中</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cmp-note">※ 国内で提供されている各分野の代表的なサービスの公開情報・利用者レビューをもとにした、2026年7月時点の一般的な傾向です。</p>
+  </div>
+</section>
+
+<!-- ================= STEPS ================= -->
+<section class="steps">
+  <div class="wrap">
+    <p class="sec-k">はじめかた</p>
+    <h2>説明書はいりません。3分で今日から。</h2>
+    <div class="step-list">
+      <div class="step"><p class="n">STEP 1</p><h3>開く</h3><p>アプリのページを開くだけ。アカウント作成もパスワードもありません。ホーム画面に追加すればアプリのように使えます。</p></div>
+      <div class="step"><p class="n">STEP 2</p><h3>屋号とメニューを入れる</h3><p>設定で屋号と、よくやる作業と料金を登録。これが見積・請求書の部品になります。</p></div>
+      <div class="step"><p class="n">STEP 3</p><h3>今日の仕事を1件入れる</h3><p>あとは使いながら覚えるだけ。「はじめかたガイド」が画面の中で案内します。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DATA HONESTY ================= -->
+<section>
+  <div class="wrap">
+    <p class="sec-k">だいじな話</p>
+    <h2>あなたのデータは、あなたの端末の中だけに。</h2>
+    <div class="data-box">
+      <h3>ゲンバノートは、お客様情報を一切預かりません。</h3>
+      <p>入力した顧客情報や売上は、<b>あなたのスマホ（ブラウザ）の中にだけ</b>保存されます。
+      私たちのサーバーには何も送信されません。だから登録が要らず、圏外でも動き、情報漏えいの心配がありません。</p>
+      <div class="pt"><span class="d">✓</span><span>そのかわり、<b>機種変更やブラウザのデータ削除で消えてしまいます</b>。設定画面の「書き出す」でバックアップを取ってください。時期が来るとアプリが自動でお知らせします。</span></div>
+      <div class="pt"><span class="d">✓</span><span>複数の端末で同期できる「消えない」有料プランを準備中です。基本機能は、その後もずっと無料のままです。</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="pain">
+  <div class="wrap">
+    <p class="sec-k">よくある質問</p>
+    <h2>正直にお答えします。</h2>
+    <div style="margin-top:24px">
+      <details>
+        <summary>本当に無料ですか？あとから請求されませんか？</summary>
+        <p>基本機能は無料で、勝手に有料に切り替わることはありません。将来、クラウド同期などの「あったら嬉しい」機能だけを有料プランとして追加する予定ですが、いま使える機能が後から取り上げられることはありません。</p>
+      </details>
+      <details>
+        <summary>なぜ無料なのですか？</summary>
+        <p>まず現場で本当に役に立つものになることが先だと考えているからです。使ってくれる方の声で改良を重ね、その先で「消えない安心（クラウド同期）」を有料でお届けする計画です。無料の間も広告は入れません。</p>
+      </details>
+      <details>
+        <summary>インボイス制度に対応していますか？</summary>
+        <p>はい。設定で適格請求書発行事業者の登録番号を入れると書類に記載されます。消費税率も10%・8%・免税から選べます。</p>
+      </details>
+      <details>
+        <summary>機種変更のときはどうすればいいですか？</summary>
+        <p>設定画面の「書き出す」でバックアップファイルを保存し、新しい端末で「読み込む」を押すだけです。データが増えてくると、アプリが自動でバックアップをおすすめします。</p>
+      </details>
+      <details>
+        <summary>請求書アプリなら他にもあります。何が違うのですか？</summary>
+        <p>書類を作る機能だけなら、他にも良いアプリがあります。ゲンバノートの違いは、書類の「前後」まで繋がっていることです。予定を入れる→現場へ行く→完了にする→未請求ならアプリが警告→請求書を出す→お礼をLINEで送る→入金を確認する。この一連の流れが1つの画面で回ります。書類はその一部にすぎません。</p>
+      </details>
+      <details>
+        <summary>どんな職種に向いていますか？</summary>
+        <p>ハウスクリーニング、エアコン清掃、便利屋、リフォーム・修理、出張マッサージ・整体、家事代行、庭師、パーソナルトレーナーなど、「お客様のところへ伺って仕事をして、請求する」ひとり仕事全般に向いています。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="final">
+  <div class="wrap">
+    <p class="sec-k">さあ、今日の現場から</p>
+    <h2>事務作業は、移動の合間に終わらせよう。</h2>
+    <a class="cta" href="../app/">無料で使ってみる<span class="ar">→</span></a>
+    <span class="cta-note">登録不要・広告なし・すぐ使えます</span>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    ゲンバノート（GENBA NOTE）<br>
+    ご意見・ご要望は <a href="https://github.com/DBTG-mgn/DBTG-mgn.github.io/issues" rel="noopener">GitHub</a> までお寄せください。
+  </div>
+</footer>
+
+</body>
+</html>
