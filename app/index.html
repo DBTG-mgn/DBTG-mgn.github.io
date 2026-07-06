@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ゲンバノート｜ひとり業務管理</title>
+<script data-goatcounter="https://genbanote.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <style>
   :root{
     --bg:#f2f5f3; --card:#ffffff; --ink:#1e2a24; --sub:#5f6e66;
@@ -884,6 +885,26 @@ function toast(msg){
 /* ================= first run ================= */
 document.getElementById('fab').style.display='none';
 render();
+
+/* ---- 匿名の利用回数計測（初回/再訪の区別のみ・個人情報は送らない） ---- */
+(function(){
+  let first=false;
+  try{
+    first=!localStorage.getItem('gn_seen');
+    if(first)localStorage.setItem('gn_seen','1');
+  }catch(e){return;}
+  const name=first?'app-open-first':'app-open-return';
+  function send(){
+    if(window.goatcounter&&window.goatcounter.count){
+      try{window.goatcounter.count({path:name,event:true});}catch(e){}
+    }
+  }
+  if(window.goatcounter&&window.goatcounter.count)send();
+  else{
+    const s=document.querySelector('script[data-goatcounter]');
+    if(s)s.addEventListener('load',send);
+  }
+})();
 </script>
 </body>
 </html>
