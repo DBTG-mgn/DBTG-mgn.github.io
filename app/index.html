@@ -931,7 +931,7 @@ document.getElementById('fab').style.display='none';
 render();
 
 /* ---- 匿名の利用統計（同意した人のみ・週1回・個人情報は送らない） ---- */
-const TELEMETRY_URL='__TELEMETRY_URL__';
+const TELEMETRY_URL='https://genbanote-telemetry.genbanote.workers.dev/v1/ping';
 function isoWeek(d){
   const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
   const day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);
