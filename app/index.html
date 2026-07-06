@@ -277,6 +277,35 @@
     </div>
 
     <div class="card">
+      <h3>開発への協力（匿名の利用統計）</h3>
+      <p class="muted" style="margin:0 0 8px">ONにすると、サービス改善と相場調査のため、以下の<b>匿名データだけ</b>を週1回送信します。
+      顧客の名前・電話・住所・案件のメモが送られることは<b>ありません</b>。</p>
+      <ul class="muted" style="font-size:12px;margin:0 0 4px;padding-left:18px;line-height:1.8">
+        <li>ランダムな匿名ID（あなた個人とは紐づきません）</li>
+        <li>職種カテゴリ（下で選択したもの）</li>
+        <li>登録済みサービスメニューの品名と価格</li>
+        <li>今月の案件数・売上の「おおよその帯」（例：5〜9件／10〜30万円）</li>
+      </ul>
+      <label class="f">職種カテゴリ</label>
+      <select class="f" id="statOcc">
+        <option value="">（未選択）</option>
+        <option>清掃・ハウスクリーニング</option>
+        <option>修理・リフォーム</option>
+        <option>便利屋・代行</option>
+        <option>造園・外構</option>
+        <option>美容・マッサージ・整体</option>
+        <option>トレーナー・教室</option>
+        <option>配送・運搬</option>
+        <option>その他</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:10px;margin:14px 0 0;font-size:14.5px;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="statOn" style="width:20px;height:20px;accent-color:var(--brand)">
+        匿名の利用統計を送信する
+      </label>
+      <button class="btn full sm" style="margin-top:12px" onclick="saveStats()">この設定を保存</button>
+    </div>
+
+    <div class="card">
       <h3>データのバックアップ</h3>
       <p class="muted" style="margin:0 0 10px">データはこの端末のブラウザ内にのみ保存されます。機種変更・ブラウザ変更の前に必ず書き出してください。</p>
       <div class="row">
@@ -319,6 +348,7 @@ function seed(){
   d.profile=Object.assign({yago:'',name:'',phone:'',reg:'',addr:'',note:'',taxRate:10},d.profile||{});
   d.menu=d.menu||[];d.customers=d.customers||[];d.jobs=d.jobs||[];
   d.meta=Object.assign({lastExport:'',changes:0},d.meta||{});
+  d.meta.stats=Object.assign({on:false,occ:'',sid:'',lastWeek:''},d.meta.stats||{});
   return d;
 }
 let DB=seed();
@@ -487,6 +517,20 @@ function renderSettings(){
      <div class="s">${yen(m.price)}</div></div>
      <button class="btn danger sm" onclick="delMenu('${m.id}')">削除</button></div>`).join('')
     :'<div class="empty">未登録です</div>';
+  const st=DB.meta.stats;
+  document.getElementById('statOn').checked=!!st.on;
+  document.getElementById('statOcc').value=st.occ||'';
+}
+function saveStats(){
+  const on=document.getElementById('statOn').checked;
+  const occ=document.getElementById('statOcc').value;
+  if(on&&!occ){toast('職種カテゴリを選んでください');return;}
+  const st=DB.meta.stats;
+  st.on=on;st.occ=occ;
+  if(on&&!st.sid)st.sid='u_'+uid();
+  if(!on)st.lastWeek='';
+  save();toast(on?'協力ありがとうございます！':'送信をオフにしました');
+  telemetryTick();
 }
 function saveProfile(){
   DB.profile={yago:setYago.value.trim(),name:setName.value.trim(),phone:setPhone.value.trim(),
@@ -885,6 +929,34 @@ function toast(msg){
 /* ================= first run ================= */
 document.getElementById('fab').style.display='none';
 render();
+
+/* ---- 匿名の利用統計（同意した人のみ・週1回・個人情報は送らない） ---- */
+const TELEMETRY_URL='https://genbanote-telemetry.genbanote.workers.dev/v1/ping';
+function isoWeek(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);
+  const y=t.getUTCFullYear();
+  const w=Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7);
+  return y+'-W'+String(w).padStart(2,'0');
+}
+function telemetryTick(){
+  const s=DB.meta.stats;
+  if(!s||!s.on||!s.sid||!TELEMETRY_URL.startsWith('https'))return;
+  const wk=isoWeek(new Date());
+  if(s.lastWeek===wk)return;
+  const m=thisYM();
+  const jobs=DB.jobs.filter(j=>ym(j.date)===m).length;
+  const sales=DB.jobs.filter(j=>ym(j.date)===m&&SOLD(j)).reduce((t,j)=>t+jobTotal(j),0);
+  const jb=jobs===0?'0':jobs<5?'1-4':jobs<10?'5-9':jobs<20?'10-19':jobs<50?'20-49':'50+';
+  const sb=sales===0?'0':sales<100000?'~10万':sales<300000?'10-30万':sales<1000000?'30-100万':'100万+';
+  const payload={id:s.sid,week:wk,occ:s.occ,jobs:jb,sales:sb,
+    menu:DB.menu.slice(0,50).map(x=>({n:String(x.name||'').slice(0,40),p:Number(x.price)||0}))};
+  fetch(TELEMETRY_URL,{method:'POST',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(payload),keepalive:true})
+    .then(r=>{if(r&&r.ok){s.lastWeek=wk;persist();}})
+    .catch(()=>{});
+}
+telemetryTick();
 
 /* ---- 匿名の利用回数計測（初回/再訪の区別のみ・個人情報は送らない） ---- */
 (function(){

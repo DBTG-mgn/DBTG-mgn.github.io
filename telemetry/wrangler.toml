@@ -1,0 +1,10 @@
+name = "genbanote-telemetry"
+main = "worker.js"
+compatibility_date = "2026-06-01"
+account_id = "a96d90ed4068485aabd11f4ff33dffc4"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "genbanote-telemetry"
+database_id = "0221b9a9-6600-4de7-b022-364d3577923d"
