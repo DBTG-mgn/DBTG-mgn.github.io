@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ゲンバノート｜ひとり業務管理</title>
+<title>タバネル｜ひとり業務管理</title>
 <script data-goatcounter="https://genbanote.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <style>
   :root{
@@ -175,7 +175,7 @@
 <body>
 
 <header>
-  <div class="brand">ゲンバノート<small>GENBA NOTE</small></div>
+  <div class="brand">タバネル<small>TABANERU</small></div>
   <div class="yago" id="hdrYago">屋号を設定してください</div>
 </header>
 
@@ -314,7 +314,7 @@
         <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
       </div>
     </div>
-    <p class="muted" style="text-align:center">ゲンバノート v0.2</p>
+    <p class="muted" style="text-align:center">タバネル v0.5</p>
   </section>
 
 </div>
@@ -877,7 +877,7 @@ function makeDoc(id,type){
 function exportData(){
   const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='genba-note-backup-'+todayStr()+'.json';a.click();
+  a.download='tabaneru-backup-'+todayStr()+'.json';a.click();
   DB.meta.lastExport=todayStr();DB.meta.changes=0;persist();
   toast('書き出しました');
 }

@@ -1,5 +1,5 @@
 /**
- * ゲンバノート テレメトリ受け皿 (Cloudflare Worker + D1)
+ * タバネル テレメトリ受け皿 (Cloudflare Worker + D1)
  *
  * 受け取るのは「同意した利用者」からの匿名データのみ:
  *   - 匿名ID(ランダム英数字・個人と紐づかない)
@@ -91,7 +91,7 @@ export default {
 
       const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>ゲンバノート 利用統計</title>
+<title>タバネル 利用統計</title>
 <style>
 body{font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:#f2f5f3;color:#1e2a24;margin:0;padding:20px;line-height:1.6}
 .wrap{max-width:860px;margin:0 auto}
@@ -103,7 +103,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .empty{color:#5f6e66;font-size:13px;background:#fff;padding:14px;border-radius:10px}
 .note{font-size:12px;color:#5f6e66;margin-top:26px}
 </style></head><body><div class="wrap">
-<h1>ゲンバノート 利用統計ダッシュボード</h1>
+<h1>タバネル 利用統計ダッシュボード</h1>
 <h2>週ごとのアクティブ利用者数（匿名ID単位）</h2>
 ${table(weekly, ['週','人数'], r=>`<tr><td>${esc(r.week)}</td><td class="num">${r.n}</td></tr>`)}
 <h2>継続利用（何週使っている人が何人いるか）</h2>
