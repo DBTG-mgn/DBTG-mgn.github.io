@@ -46,6 +46,7 @@
   - 機能: 予定/顧客/見積・請求・領収書/まとめ請求/LINEメッセージ生成/売上チャート/検索/バックアップ
 - `lp/index.html` — 紹介LP(+ `lp/ogp.png` OGP画像)
 - `telemetry/` — Cloudflare Worker(同意制の匿名利用統計。D1保存)
+- `brand/` — ブランド素材(Xアイコン・ヘッダーPNGと、その生成元HTML。色や文言を変えて再生成可能)
 - ルートの `index.html` はProgate練習ページ(触らない)
 
 ## 本番URL
