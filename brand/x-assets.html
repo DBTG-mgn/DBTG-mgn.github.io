@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><style>
+*{margin:0;box-sizing:border-box}
+body{font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;background:#888}
+
+/* ===== icon 400x400: 三本を帯で束ねるマーク ===== */
+#icon{width:400px;height:400px;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#14281e 0%,#1f5c3d 52%,#2b7a52 100%)}
+#icon .bars{position:absolute;top:88px;left:50%;transform:translateX(-50%);
+  display:flex;gap:26px}
+#icon .bar{width:34px;height:224px;background:rgba(255,255,255,.92);border-radius:17px}
+#icon .bar:nth-child(1){height:190px;margin-top:17px;background:rgba(255,255,255,.62)}
+#icon .bar:nth-child(3){height:190px;margin-top:17px;background:rgba(255,255,255,.62)}
+#icon .band{position:absolute;top:172px;left:50%;transform:translateX(-50%);
+  width:214px;height:56px;background:#14281e;border:7px solid #fff;border-radius:28px}
+
+/* ===== header 1500x500 ===== */
+#header{width:1500px;height:500px;position:relative;overflow:hidden;color:#fff;
+  background:linear-gradient(160deg,#14281e 0%,#1f5c3d 55%,#2b7a52 100%);margin-top:20px}
+#header .pad{position:absolute;inset:0;padding:70px 90px;display:flex;flex-direction:column;justify-content:center}
+#header .logo{font-size:56px;font-weight:900;letter-spacing:.05em}
+#header .logo small{font-size:18px;font-weight:500;opacity:.65;letter-spacing:.35em;margin-left:18px}
+#header h1{font-size:42px;font-weight:900;line-height:1.4;margin-top:22px}
+#header h1 .u{background:linear-gradient(transparent 66%,rgba(255,255,255,.25) 66%)}
+#header .chips{display:flex;gap:12px;margin-top:30px}
+#header .chip{font-size:17px;font-weight:700;color:#eafaf1;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.22);border-radius:11px;padding:9px 18px}
+#header .url{position:absolute;right:90px;bottom:34px;font-size:16px;color:#9fc9b2;letter-spacing:.04em}
+/* 右側に大きな束マーク(薄く) */
+#header .mark{position:absolute;right:110px;top:50%;transform:translateY(-50%);opacity:.16}
+#header .mark .bars{display:flex;gap:24px}
+#header .mark .bar{width:32px;height:300px;background:#fff;border-radius:16px}
+#header .mark .bar:nth-child(1),#header .mark .bar:nth-child(3){height:250px;margin-top:25px}
+#header .mark .band{position:absolute;top:118px;left:50%;transform:translateX(-50%);
+  width:200px;height:56px;background:#14281e;border:7px solid #fff;border-radius:28px}
+</style></head><body>
+
+<div id="icon">
+  <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+  <div class="band"></div>
+</div>
+
+<div id="header">
+  <div class="mark"><div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div><div class="band"></div></div>
+  <div class="pad">
+    <div class="logo">タバネル<small>TABANERU</small></div>
+    <h1>現場仕事の1日を、<span class="u">これひとつで束ねる。</span></h1>
+    <div class="chips">
+      <span class="chip">✓ ずっと無料</span>
+      <span class="chip">✓ 広告なし</span>
+      <span class="chip">✓ 登録不要</span>
+      <span class="chip">✓ 圏外でも動く</span>
+    </div>
+  </div>
+  <div class="url">dbtg-mgn.github.io/lp</div>
+</div>
+
+</body></html>
