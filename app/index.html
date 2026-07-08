@@ -80,6 +80,7 @@
   .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px}
   .btn.xs{padding:6px 10px;font-size:12px;border-radius:8px}
   .btn.danger{background:#fff;color:#b91c1c;border:1px solid #eecaca}
+  a.btn{text-decoration:none}
   .row{display:flex;gap:8px;flex-wrap:wrap}
   /* ---------- list items ---------- */
   .item{display:flex;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--line)}
@@ -321,6 +322,10 @@
         <button class="btn sub sm" onclick="exportData()">書き出す（JSON）</button>
         <button class="btn sub sm" onclick="document.getElementById('importFile').click()">読み込む</button>
         <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)">
+        <p class="muted" style="margin:0 0 10px">🔒 機種変更しても消えない<b>「クラウド同期」（有料プラン）</b>を準備中です。</p>
+        <a class="btn ghost sm" href="https://forms.gle/GehKym1Afdf79RVx9" target="_blank" rel="noopener">先行案内に登録する（無料）</a>
       </div>
     </div>
     <p class="muted" style="text-align:center">タバネル v0.5</p>
