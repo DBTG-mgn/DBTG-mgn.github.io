@@ -71,7 +71,7 @@
 ## 開発フロー
 1. オーナーと同じClaudeセッションで構想・仕様・完了条件を確定する
 2. `AI_COLLABORATION_GUIDE.md`と作業中PRを確認する
-3. `git fetch origin main && git checkout -B claude/<task-name> origin/main`
+3. `git fetch origin main` の後、作業ブランチを用意する。新規は `git switch -c claude/<task-name> origin/main`、続きは `git switch claude/<task-name>`。マージ済みの同名ブランチを作り直すときだけ `git checkout -B claude/<task-name> origin/main`（未マージ・未pushの変更を失うため、マージ前のブランチには使わない）
 4. 合意した仕様をPR本文用に整理してから実装する
 5. 実装 → Playwrightで検証する
 6. コミット→プッシュ→PR作成 → 同じセッションでCodexレビューを確認する
